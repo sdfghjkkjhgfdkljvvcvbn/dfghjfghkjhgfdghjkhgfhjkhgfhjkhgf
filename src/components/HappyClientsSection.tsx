@@ -1,42 +1,61 @@
 import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 
-interface ClientVideo {
+interface ClientTestimonial {
   id: number;
   videoPath: string;
   name: string;
   title: string;
-  image: string;
+  clientImage: string;
+  projectImage: string;
+  rating: number;
 }
 
-const clientVideos: ClientVideo[] = [
+const clientTestimonials: ClientTestimonial[] = [
   {
     id: 1,
     videoPath: "/video/our happy client/1.mp4",
     name: "Garima",
     title: "Homeowner - Living Room Transformation",
-    image: "/reviewers/garima.jpg",
+    clientImage: "/reviewers/garima.jpg",
+    projectImage: "/reviewers/garima.jpg",
+    rating: 5,
   },
   {
     id: 2,
     videoPath: "/video/our happy client/2.mp4",
     name: "Harshit",
     title: "Interior Design Client - Office Space",
-    image: "/reviewers/harshit-bgremoved.png",
+    clientImage: "/reviewers/harshit-bgremoved.png",
+    projectImage: "/reviewers/harshit-bgremoved.png",
+    rating: 5,
   },
   {
     id: 3,
     videoPath: "/video/our happy client/3.mp4",
     name: "Ranjana",
     title: "Kitchen Renovation Client",
-    image: "/reviewers/ranjana.jpeg",
+    clientImage: "/reviewers/ranjana.jpeg",
+    projectImage: "/reviewers/ranjana.jpeg",
+    rating: 5,
   },
   {
     id: 4,
     videoPath: "/video/our happy client/4.mp4",
     name: "Siddharth",
     title: "Bedroom Design Client",
-    image: "/reviewers/siddharth.png",
+    clientImage: "/reviewers/siddharth.png",
+    projectImage: "/reviewers/siddharth.png",
+    rating: 5,
+  },
+  {
+    id: 5,
+    videoPath: "/video/our happy client/5 .mp4",
+    name: "Mishara Family",
+    title: "Kitchen Design & Consultancy",
+    clientImage: "/reviewers/mishara family.jpeg",
+    projectImage: "/reviewers/mishara family.jpeg",
+    rating: 5,
   },
 ];
 
@@ -47,7 +66,7 @@ export default function HappyClientsSection() {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 400;
+      const scrollAmount = 350;
       scrollContainerRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
@@ -56,7 +75,6 @@ export default function HappyClientsSection() {
   };
 
   const toggleVideoPlay = (videoId: number) => {
-    // Pause all other videos
     Object.keys(videoRefs.current).forEach((id) => {
       const vid = videoRefs.current[parseInt(id)];
       if (vid && parseInt(id) !== videoId) {
@@ -64,7 +82,6 @@ export default function HappyClientsSection() {
       }
     });
 
-    // Toggle the clicked video
     const video = videoRefs.current[videoId];
     if (video) {
       if (video.paused) {
@@ -77,75 +94,61 @@ export default function HappyClientsSection() {
   };
 
   return (
-    <section className="py-20 md:py-32 px-4 md:px-6" style={{ backgroundColor: "rgba(220, 38, 38, 0.08)" }}>
-      <div className="max-w-7xl mx-auto">
+    <section className="py-20 md:py-32 px-4 md:px-6 bg-white">
+      <div className="max-w-full">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <span className="text-xs font-bold tracking-widest text-brand-red uppercase">
-            Testimonials
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-3 mb-4">
+        <div className="text-center mb-16 max-w-7xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Our Happy Clients
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Hear from our satisfied clients about their transformation journey with Parbati Interior
-          </p>
+          <div className="w-24 h-1 bg-brand-red mx-auto"></div>
         </div>
 
-        {/* Videos Carousel */}
+        {/* Horizontal Scrolling Gallery */}
         <div className="relative">
-          {/* Scroll Container */}
           <div
             ref={scrollContainerRef}
             id="happy-clients-scroll"
-            className="flex gap-6 overflow-x-auto scroll-smooth"
+            className="flex gap-4 overflow-x-auto scroll-smooth px-4 md:px-0"
             style={{ scrollBehavior: "smooth", scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {clientVideos.map((client) => (
+            {clientTestimonials.map((client) => (
               <div
                 key={client.id}
-                className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
+                className="flex-shrink-0 w-64 md:w-80 h-80 md:h-96 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group bg-gray-900 cursor-pointer relative"
               >
-                {/* Video Container */}
-                <div className="relative w-full h-80 bg-gray-900 group cursor-pointer">
-                  <video
-                    ref={(el) => {
-                      if (el) videoRefs.current[client.id] = el;
-                    }}
-                    src={client.videoPath}
-                    className="w-full h-full object-cover"
-                    autoPlay={client.id === 1}
-                    onClick={() => toggleVideoPlay(client.id)}
-                  />
+                {/* Video */}
+                <video
+                  ref={(el) => {
+                    if (el) videoRefs.current[client.id] = el;
+                  }}
+                  src={client.videoPath}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay={client.id === 1}
+                  onClick={() => toggleVideoPlay(client.id)}
+                />
 
-                  {/* Play/Pause Button Overlay — always visible */}
-                  <div 
-                    className="absolute inset-0 bg-black/10 flex items-center justify-center cursor-pointer"
-                    onClick={() => toggleVideoPlay(client.id)}
-                  >
-                    <div className="bg-gray-600 hover:bg-gray-700 p-4 rounded-full shadow-lg transition-all transform hover:scale-110">
-                      {playingVideoId === client.id ? (
-                        <Pause className="w-6 h-6 text-white fill-white" />
-                      ) : (
-                        <Play className="w-6 h-6 text-white fill-white" />
-                      )}
-                    </div>
+                {/* Dark Overlay on Hover */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+
+                {/* Play/Pause Button — always visible, gray */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
+                  onClick={() => toggleVideoPlay(client.id)}
+                >
+                  <div className="bg-gray-600 hover:bg-gray-700 p-4 rounded-full shadow-xl transition-all transform hover:scale-125">
+                    {playingVideoId === client.id ? (
+                      <Pause className="w-6 h-6 text-white fill-white" />
+                    ) : (
+                      <Play className="w-6 h-6 text-white fill-white" />
+                    )}
                   </div>
                 </div>
 
-                {/* Client Info */}
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={client.image}
-                      alt={client.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-brand-red"
-                    />
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-sm">{client.name}</h3>
-                      <p className="text-xs text-gray-500">{client.title}</p>
-                    </div>
-                  </div>
+                {/* Client Info Overlay — visible on hover */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                  <h3 className="font-bold text-white text-lg">{client.name}</h3>
+                  <p className="text-sm text-white/90">{client.title}</p>
                 </div>
               </div>
             ))}
@@ -154,19 +157,30 @@ export default function HappyClientsSection() {
           {/* Navigation Buttons */}
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-6 z-10 p-3 rounded-full bg-brand-red hover:bg-red-700 text-white shadow-lg transition-all hover:scale-110"
+            className="absolute -left-6 md:left-0 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-brand-red hover:bg-red-700 text-white shadow-lg transition-all hover:scale-110 flex items-center justify-center"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
 
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/3 -translate-y-1/2 translate-x-6 z-10 p-3 rounded-full bg-brand-red hover:bg-red-700 text-white shadow-lg transition-all hover:scale-110"
+            className="absolute -right-6 md:right-0 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-brand-red hover:bg-red-700 text-white shadow-lg transition-all hover:scale-110 flex items-center justify-center"
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
           </button>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="text-center mt-16 max-w-7xl mx-auto">
+          <p className="text-gray-600 mb-4 text-lg">Ready to transform your space?</p>
+          <a
+            href="https://wa.me/9851350892?text=Hi! I saw the testimonials on your website and I'm interested in learning more about Parbati Interior's services."
+            className="inline-flex items-center gap-2 px-8 py-3 bg-brand-red hover:bg-red-700 text-white font-bold rounded-lg transition-all hover:shadow-lg"
+          >
+            Contact Us on WhatsApp
+          </a>
         </div>
       </div>
 
