@@ -13,44 +13,20 @@ const team = [
   {
     name: "Founder & Lead Designer",
     role: "Interior Design & Planning",
-    // Replace with actual image path
-    image: null,
+    image: null as string | null,
     bio: "Passionate about creating functional and beautiful spaces that reflect the client's personality and lifestyle.",
   },
   {
     name: "Senior Architect",
     role: "Structural & Construction",
-    image: null,
+    image: null as string | null,
     bio: "Expert in blending modern architecture with traditional Nepali design sensibilities for enduring results.",
   },
   {
     name: "Project Manager",
     role: "Execution & Client Relations",
-    image: null,
+    image: null as string | null,
     bio: "Ensures every project is delivered on time, within budget, and to the highest quality standards.",
-  },
-];
-
-const values = [
-  {
-    title: "Quality First",
-    description: "We use only premium materials and partner with skilled craftsmen to ensure every detail is built to last.",
-    icon: "🏆",
-  },
-  {
-    title: "Client-Centered",
-    description: "Your vision drives everything. We listen, collaborate, and refine until the result exceeds expectations.",
-    icon: "🤝",
-  },
-  {
-    title: "Transparent Process",
-    description: "No hidden costs, no surprises. We keep you informed at every stage from design to handover.",
-    icon: "💡",
-  },
-  {
-    title: "On-Time Delivery",
-    description: "We respect your time. Our structured project timelines ensure work is completed as promised.",
-    icon: "⏱️",
   },
 ];
 
@@ -64,22 +40,17 @@ export default function About() {
 
       {/* ── HERO BANNER ─────────────────────────────────────────── */}
       <section className="relative bg-gray-900 py-28 sm:py-36 overflow-hidden">
-        {/* Background image placeholder */}
         <div className="absolute inset-0">
-          {/* Replace src with actual hero image when available */}
           <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
           <div className="absolute inset-0 bg-black/50" />
         </div>
-
-        {/* Subtle grid overlay */}
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(255,255,255,.05) 40px,rgba(255,255,255,.05) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,.05) 40px,rgba(255,255,255,.05) 41px)",
+              "repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(224, 224, 224, 0) 40px,rgba(255,255,255,.05) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,.05) 40px,rgba(255,255,255,.05) 41px)",
           }}
-        />
-
+        />.
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-extrabold tracking-widest text-red-400 uppercase bg-red-500/10 border border-red-500/20 px-3.5 py-1.5 rounded-md inline-block mb-6">
             About Us
@@ -131,24 +102,17 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* Image block — placeholder, swap with real photo */}
             <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3] bg-gray-100 flex items-center justify-center">
-                {/* ← Replace this div with <img src="..." /> when you have the photo */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <span className="text-gray-400 text-sm font-medium">[ Company / Office Photo ]</span>
-                </div>
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3] bg-gray-100">
+                <img src="/hero.jpg" alt="Parbati Interior" className="w-full h-full object-cover" />
               </div>
-              {/* Floating accent card */}
               <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-brand-red text-white rounded-2xl px-6 py-4 shadow-xl shadow-red-500/20 z-10">
                 <p className="text-2xl font-extrabold font-display leading-none">8+</p>
                 <p className="text-xs font-bold tracking-wider uppercase mt-1 text-red-100">Years in Nepal</p>
               </div>
-              {/* Gold accent line */}
               <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-yellow-500 rounded-tl-2xl opacity-60" />
             </div>
 
-            {/* Content */}
             <div className="space-y-6">
               <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
                 Who We Are
@@ -184,37 +148,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── OUR VALUES ──────────────────────────────────────────── */}
-      <section className="py-24 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
-              What Drives Us
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Our Core Values
-            </h2>
-            <div className="flex justify-center">
-              <div className="h-0.5 w-12 bg-yellow-500" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map(({ title, description, icon }) => (
-              <div key={title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow space-y-3 group">
-                <div className="text-3xl">{icon}</div>
-                <h3 className="font-display text-lg font-bold text-gray-900 group-hover:text-brand-red transition-colors">
-                  {title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── MEET THE TEAM ───────────────────────────────────────── */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
             <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
@@ -231,7 +166,6 @@ export default function About() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {team.map(({ name, role, image, bio }) => (
               <div key={name} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
-                {/* Team member photo placeholder */}
                 <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden flex items-center justify-center">
                   {image ? (
                     <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -253,11 +187,10 @@ export default function About() {
       </section>
 
       {/* ── OUR WORKSPACE / STUDIO ──────────────────────────────── */}
-      <section className="py-24 bg-gray-50 border-y border-gray-100">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* Content */}
             <div className="space-y-6 order-2 lg:order-1">
               <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
                 Our Workshop
@@ -284,24 +217,15 @@ export default function About() {
               </ul>
             </div>
 
-            {/* Image grid placeholder */}
             <div className="grid grid-cols-2 gap-4 order-1 lg:order-2">
-              {/* Large image */}
-              <div className="col-span-2 rounded-2xl overflow-hidden aspect-video bg-gray-100 flex items-center justify-center shadow-md">
-                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <span className="text-gray-400 text-sm font-medium">[ Workshop / Studio Photo ]</span>
-                </div>
+              <div className="col-span-2 rounded-2xl overflow-hidden aspect-video shadow-md">
+                <img src="/about_photo/20195898327467908.png" alt="Our workshop" className="w-full h-full object-cover" />
               </div>
-              {/* Two smaller images */}
-              <div className="rounded-xl overflow-hidden aspect-square bg-gray-100 flex items-center justify-center shadow-sm">
-                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <span className="text-gray-400 text-xs font-medium text-center px-2">[ Work in Progress ]</span>
-                </div>
+              <div className="rounded-xl overflow-hidden aspect-square shadow-sm">
+                <img src="/about_photo/6122149488002325.png" alt="Work in progress" className="w-full h-full object-cover" />
               </div>
-              <div className="rounded-xl overflow-hidden aspect-square bg-gray-100 flex items-center justify-center shadow-sm">
-                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  <span className="text-gray-400 text-xs font-medium text-center px-2">[ Finished Detail ]</span>
-                </div>
+              <div className="rounded-xl overflow-hidden aspect-square shadow-sm">
+                <img src="/about_photo/Home Bathroom Ideas Transforming Homes in 2026.png" alt="Finished detail" className="w-full h-full object-cover" />
               </div>
             </div>
 
@@ -311,7 +235,6 @@ export default function About() {
 
       {/* ── CTA BANNER ──────────────────────────────────────────── */}
       <section className="py-20 bg-brand-red relative overflow-hidden">
-        {/* Subtle pattern */}
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
@@ -344,8 +267,6 @@ export default function About() {
               WhatsApp Us
             </a>
           </div>
-
-          {/* Contact details */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4 text-red-100 text-xs font-medium">
             <span className="flex items-center gap-1.5 justify-center">
               <MapPin className="h-3.5 w-3.5" /> Shantinagar-31, Kathmandu, Nepal
