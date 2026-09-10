@@ -107,7 +107,7 @@ export default function HappyClientsSection() {
                 className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
               >
                 {/* Video Container */}
-                <div className="relative w-full h-64 bg-gray-900 group cursor-pointer">
+                <div className="relative w-full h-80 bg-gray-900 group cursor-pointer">
                   <video
                     ref={(el) => {
                       if (el) videoRefs.current[client.id] = el;
@@ -118,12 +118,12 @@ export default function HappyClientsSection() {
                     onClick={() => toggleVideoPlay(client.id)}
                   />
 
-                  {/* Play/Pause Button Overlay */}
+                  {/* Play/Pause Button Overlay — always visible */}
                   <div 
-                    className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute inset-0 bg-black/10 flex items-center justify-center cursor-pointer"
                     onClick={() => toggleVideoPlay(client.id)}
                   >
-                    <div className="bg-brand-red hover:bg-red-700 p-4 rounded-full shadow-lg transition-all transform hover:scale-110">
+                    <div className="bg-gray-600 hover:bg-gray-700 p-4 rounded-full shadow-lg transition-all transform hover:scale-110">
                       {playingVideoId === client.id ? (
                         <Pause className="w-6 h-6 text-white fill-white" />
                       ) : (
@@ -145,14 +145,6 @@ export default function HappyClientsSection() {
                       <h3 className="font-bold text-gray-900 text-sm">{client.name}</h3>
                       <p className="text-xs text-gray-500">{client.title}</p>
                     </div>
-                  </div>
-
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-amber-500">
-                        ⭐
-                      </span>
-                    ))}
                   </div>
                 </div>
               </div>

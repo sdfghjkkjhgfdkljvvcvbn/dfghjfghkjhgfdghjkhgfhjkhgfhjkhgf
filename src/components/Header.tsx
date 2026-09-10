@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone, MapPin, Instagram, Facebook } from "lucide-react";
+import { Menu, X, Phone, MapPin } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 interface HeaderProps {
@@ -23,6 +23,7 @@ export default function Header({ onBookConsultation, isModalOpen }: HeaderProps)
 
   const navLinks = [
     { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
     { name: "Services", path: "/services" },
     { name: "Projects", path: "/projects" },
     { name: "Blog", path: "/blog" },
@@ -53,6 +54,8 @@ export default function Header({ onBookConsultation, isModalOpen }: HeaderProps)
       <div id="topbar" className="hidden sm:block bg-brand-red-dark text-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-9 text-xs font-semibold">
+          <div className="flex items-center gap-3">
+            </div>
             <div className="flex items-center gap-5">
               <a href="https://wa.me/919851350892" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-100 transition-colors">
                 <Phone className="h-3.5 w-3.5" />
@@ -62,14 +65,6 @@ export default function Header({ onBookConsultation, isModalOpen }: HeaderProps)
                 <MapPin className="h-3.5 w-3.5" />
                 Kathmandu, Nepal
               </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="#" aria-label="Instagram" className="hover:text-red-100 transition-colors">
-                <Instagram className="h-3.5 w-3.5" />
-              </a>
-              <a href="#" aria-label="Facebook" className="hover:text-red-100 transition-colors">
-                <Facebook className="h-3.5 w-3.5" />
-              </a>
             </div>
           </div>
         </div>

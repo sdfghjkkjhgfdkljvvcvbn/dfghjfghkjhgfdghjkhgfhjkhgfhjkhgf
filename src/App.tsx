@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { useState } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import WhatsAppButton from "./components/WhatsAppButton";
 import BookingModal from "./components/BookingModal";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
@@ -12,6 +11,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -26,7 +26,6 @@ function PublicLayout() {
         <Outlet context={{ setIsBookingModalOpen }} />
       </main>
       <Footer />
-      <WhatsAppButton />
       <BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} />
     </div>
   );
@@ -43,6 +42,7 @@ export default function App() {
         {/* Public facing pages */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/projects" element={<Projects />} />

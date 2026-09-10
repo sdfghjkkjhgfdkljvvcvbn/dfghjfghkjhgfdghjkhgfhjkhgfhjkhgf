@@ -357,9 +357,11 @@ export default function Contact() {
 
         </div>
 
-        {/* Large Interactive Google Map Section with Glassmorphism Info Card */}
-        <div className="mt-12 sm:mt-16 animate-fade-in-up">
-          <div className="relative rounded-3xl overflow-hidden border border-gray-100 shadow-xl bg-white h-[350px] md:h-[380px] group">
+      </div>
+
+      {/* Large Interactive Google Map Section — full viewport width */}
+      <div className="mt-12 sm:mt-16 animate-fade-in-up w-screen relative left-1/2 -translate-x-1/2">
+        <div className="relative overflow-hidden border-y border-gray-100 shadow-xl bg-white h-[350px] md:h-[450px] group">
             {/* Live Google Map iframe */}
             <iframe
               title="Parbati Interior Pvt. Ltd. Location Map"
@@ -444,8 +446,6 @@ export default function Contact() {
             </div>
           </div>
         </div>
-
-      </div>
     </div>
   );
 }
