@@ -1,0 +1,6 @@
+{
+  "name": "Parbati Interior",
+  "description": "Official portfolio website for Parbati Interior Pvt. Ltd., specializing in premium interior design, space planning, custom furniture, and general construction.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

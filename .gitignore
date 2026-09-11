@@ -1,0 +1,12 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.claude/
+
+# Runtime-submitted contact form data — not source, may contain real PII
+data/contacts.json
