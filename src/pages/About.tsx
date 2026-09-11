@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Users, Clock, CheckCircle, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowRight, Award, Users, Clock, CheckCircle, MapPin, Phone, Mail, ChevronDown } from "lucide-react";
 
 const stats = [
   { value: "150+", label: "Happy Clients", icon: Users },
@@ -54,7 +54,44 @@ const values = [
   },
 ];
 
+const faqs = [
+  {
+    question: "How much time does a typical interior design project take?",
+    answer: "Project timelines vary based on scope. A simple home makeover typically takes 3–4 months, while larger projects like full home renovations or commercial spaces can take 6–12 months. We provide a detailed timeline during the initial consultation.",
+  },
+  {
+    question: "What is your design process like?",
+    answer: "We follow a structured process: 1) Site visit and understanding your needs, 2) 3D design planning and visualization, 3) Material selection and quotation, 4) Fabrication in our workshop, 5) Installation and handover. Regular updates keep you informed at every stage.",
+  },
+  {
+    question: "Do you provide 3D visualizations before construction starts?",
+    answer: "Yes, absolutely. We create detailed 3D renderings of your space so you can visualize the final result before any work begins. This helps ensure the design aligns with your expectations and allows for easy modifications.",
+  },
+  {
+    question: "What services do you offer?",
+    answer: "We offer complete interior design and construction services including home interiors and decor, modular kitchens and furniture, WPC works (walls, ceilings, cladding), 3D planning and visualization, commercial office interiors, and project management from start to finish.",
+  },
+  {
+    question: "Can you work within my budget?",
+    answer: "Absolutely. We believe great design is possible at any budget. During consultation, we understand your financial constraints and create solutions that maximize value without compromising quality. Our in-house fabrication also helps us offer competitive pricing.",
+  },
+  {
+    question: "What areas do you serve?",
+    answer: "We primarily serve Kathmandu Valley including Kathmandu, Lalitpur (Patan), and Bhaktapur. We also undertake special projects in nearby regions. Contact us to discuss your specific location.",
+  },
+  {
+    question: "Do you provide a warranty on your work?",
+    answer: "Yes, we stand behind our work. We provide workmanship guarantees on all completed projects. Specific warranty periods depend on the type of work and materials used. We'll discuss this in detail during your consultation.",
+  },
+  {
+    question: "How do I get started?",
+    answer: "It's simple: Contact us via WhatsApp, email, or phone to schedule a free site visit. Our team will listen to your ideas, assess your space, and prepare a detailed quotation with timeline and design options. No obligation—just honest consultation.",
+  },
+];
+
 export default function About() {
+  const [openFaqId, setOpenFaqId] = useState<number | null>(0);
+
   useEffect(() => {
     document.title = "About Us | Parbati Interior Pvt. Ltd.";
   }, []);
@@ -305,6 +342,86 @@ export default function About() {
               </div>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION ─────────────────────────────────────────── */}
+      <section className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Premium Section Header */}
+          <div className="text-center mb-20 space-y-6">
+            <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
+              Have Questions?
+            </span>
+            <div className="space-y-4">
+              <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                Frequently Asked Questions
+              </h2>
+              <div className="flex justify-center">
+                <div className="h-1.5 w-20 bg-brand-red rounded-full shadow-sm" />
+              </div>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+              Everything you need to know about our services, timelines, custom fabrication, and how we deliver premium interior solutions.
+            </p>
+          </div>
+
+          {/* Premium Accordion List */}
+          <div className="space-y-4 mb-16">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaqId === index;
+              return (
+                <div
+                  key={index}
+                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${
+                    isOpen 
+                      ? "bg-white border-2 border-brand-red shadow-lg shadow-red-500/15" 
+                      : "bg-white border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300"
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaqId(isOpen ? null : index)}
+                    className="w-full text-left px-6 sm:px-8 py-7 flex justify-between items-center hover:bg-gray-50/50 transition-colors focus:outline-none group"
+                  >
+                    <div className="flex items-start gap-5 flex-1">
+                      {/* Premium Numbered Badge */}
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base shadow-md border-2 transition-all duration-300 ${
+                        isOpen 
+                          ? "bg-brand-red text-white border-brand-red" 
+                          : "bg-gray-100 text-gray-700 border-gray-200 group-hover:bg-brand-red/10 group-hover:border-brand-red/30"
+                      }`}>
+                        {String(index + 1).padStart(2, '0')}
+                      </div>
+                      <span className={`font-bold text-lg sm:text-xl transition-colors duration-300 ${
+                        isOpen ? "text-brand-red" : "text-gray-900 group-hover:text-brand-red"
+                      }`}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`h-6 w-6 text-brand-red flex-shrink-0 transition-transform duration-300 ${
+                        isOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+
+                  {/* Premium FAQ Content Box */}
+                  <div
+                    className={`transition-all duration-300 overflow-hidden ${
+                      isOpen ? "max-h-96" : "max-h-0"
+                    }`}
+                  >
+                    <div className="px-6 sm:px-8 pb-8 pt-0 border-t-2 border-gray-100">
+                      <div className="ml-15 sm:ml-16 text-base sm:text-lg text-gray-700 leading-relaxed space-y-2">
+                        {faq.answer}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

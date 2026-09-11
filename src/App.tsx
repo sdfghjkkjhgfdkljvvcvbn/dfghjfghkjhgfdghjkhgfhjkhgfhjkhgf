@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
+import { AdminRouter } from "./admin/AdminRouter";
 
 // Public layout wrapper containing the navigation shells and floating shortcuts
 function PublicLayout() {
@@ -37,9 +38,12 @@ export default function App() {
     <BrowserRouter>
       <CustomCursor />
       <Routes>
-        {/* Admin Pages */}
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
+        {/* New Admin Panel Routes */}
+        <Route path="/admin/*" element={<AdminRouter />} />
+
+        {/* Old Admin Pages (for backward compatibility) */}
+        <Route path="/admin-old" element={<Admin />} />
+        <Route path="/dashboard-old" element={<AdminDashboard />} />
 
         {/* Public facing pages */}
         <Route element={<PublicLayout />}>
