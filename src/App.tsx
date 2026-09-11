@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
 import BookingModal from "./components/BookingModal";
+import CustomCursor from "./components/CustomCursor";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetail from "./pages/ServiceDetail";
@@ -35,6 +36,7 @@ function PublicLayout() {
 export default function App() {
   return (
     <BrowserRouter>
+      <CustomCursor />
       <Routes>
         {/* Admin Pages */}
         <Route path="/admin" element={<Admin />} />

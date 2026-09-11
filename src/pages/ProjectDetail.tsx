@@ -102,6 +102,15 @@ export default function ProjectDetail() {
 
         {/* Content Container */}
         <div className="relative z-10 max-w-6xl mx-auto text-center">
+          {/* Logo */}
+          <div className="mb-6 flex justify-center">
+            <img
+              src="/logo/logo.png"
+              alt="Parbati Interior Logo"
+              className="h-24 w-24"
+            />
+          </div>
+
           {/* Category Label */}
           <span className="text-sm font-bold tracking-widest text-yellow-600 uppercase mb-4 inline-block">
             {project.category}

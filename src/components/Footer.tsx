@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Hammer,
   Phone,
   Mail,
   MapPin,
   ChevronRight,
-  Facebook,
-  Instagram,
-  MessageCircle,
   ArrowUp,
 } from "lucide-react";
 
@@ -50,48 +46,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12">
           {/* Brand */}
           <div className="space-y-5">
-            <Link id="footer-logo-link" to="/" className="flex items-center space-x-3 group">
-              <div className="bg-brand-red text-white p-2 rounded-lg flex items-center justify-center shadow-lg shadow-red-500/20">
-                <Hammer className="h-5 w-5" />
-              </div>
-              <div>
-                <span className="block font-display text-lg font-bold tracking-tight text-gray-900 group-hover:text-brand-red transition-colors">
-                  Parbati Interior
-                </span>
-                <span className="block text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
-                  Pvt. Ltd.
-                </span>
-              </div>
+            <Link id="footer-logo-link" to="/" className="flex items-center group">
+              <img src="/logo/logo.png" alt="Parbati Interior Logo" className="h-16 w-auto object-contain" />
             </Link>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              We bring practical, well-finished interiors and construction to homes and
-              businesses across the Kathmandu Valley, from first measurement to final handover.
-            </p>
-            <div className="flex items-center gap-3 pt-1">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="bg-brand-red text-white p-2 rounded-full hover:bg-brand-red-dark transition-colors"
-              >
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="bg-brand-red text-white p-2 rounded-full hover:bg-brand-red-dark transition-colors"
-              >
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="bg-brand-red text-white p-2 rounded-full hover:bg-brand-red-dark transition-colors"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </a>
-            </div>
           </div>
 
           {/* Services */}
