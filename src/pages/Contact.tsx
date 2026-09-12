@@ -69,40 +69,30 @@ export default function Contact() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setSubmitting(true);
-    setSubmitStatus("idle");
-    setStatusMessage("");
+    // Create WhatsApp message with form data
+    const message = `Hello! I'm ${formData.name}.\n\nPhone: ${formData.phone}\nEmail: ${formData.email}\n\nProject Details:\n${formData.message}`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/919851350892?text=${encodedMessage}`;
 
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
+    // Navigate to WhatsApp
+    window.open(whatsappUrl, "_blank");
 
-      const data = await response.json();
+    // Show success message
+    setSubmitStatus("success");
+    setStatusMessage("Redirecting to WhatsApp. Your message details have been prepared!");
+    
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      message: ""
+    });
 
-      if (response.ok && data.success) {
-        setSubmitStatus("success");
-        setStatusMessage(data.message || "Thank you! Your message was sent successfully.");
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          message: ""
-        });
-      } else {
-        setSubmitStatus("error");
-        setStatusMessage(data.error || "Failed to deliver message. Please check parameters and try again.");
-      }
-    } catch (err) {
-      setSubmitStatus("error");
-      setStatusMessage("Network error. Please verify your internet connection and try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setSubmitStatus("idle");
+    }, 3000);
   };
 
   const whatsappUrl = "https://wa.me/919851350892?text=Hello%20Parbati%20Interior%20team%21%20I%20visited%20your%20website%20and%20would%20like%20to%20request%20a%20turnkey%20design%20consultation%20and%20free%20site%20visit.";
@@ -374,10 +364,10 @@ export default function Contact() {
                     {submitting ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        Validating &amp; Sending...
+                        Sending to WhatsApp...
                       </>
                     ) : (
-                      "Send Consultation Request"
+                      "Send Enquiry"
                     )}
                   </button>
 
