@@ -304,7 +304,6 @@ export default function Home() {
               <video
                 width="100%"
                 height="100%"
-                controls
                 autoPlay
                 muted
                 loop

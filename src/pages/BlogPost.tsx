@@ -22,7 +22,8 @@ export default function BlogPost() {
 
   return (
     <div id="blog-post-page" className="min-h-screen bg-gray-50/50 py-16">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Shared Article Container */}
+      <div style={{ width: 'min(92vw, 1200px)', margin: '0 auto' }} className="px-0">
         <Link
           to="/blog"
           className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-brand-red transition-colors mb-8"
@@ -31,7 +32,8 @@ export default function BlogPost() {
           Back to Blog
         </Link>
 
-        <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gray-950 mb-8 shadow-xl">
+        {/* Hero Image */}
+        <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gray-950 mb-8 shadow-xl w-full">
           <img
             src={post.coverImage}
             alt={post.title}
@@ -43,7 +45,8 @@ export default function BlogPost() {
           </span>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-gray-400 font-semibold mb-3">
+        {/* Article Metadata */}
+        <div className="flex items-center gap-4 text-xs text-gray-400 font-semibold mb-6">
           <span className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
             {new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
@@ -54,18 +57,21 @@ export default function BlogPost() {
           </span>
         </div>
 
-        <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-6">
+        {/* Article Title */}
+        <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-8 text-left">
           {post.title}
         </h1>
 
-        <div className="space-y-4 mb-10">
+        {/* Article Content */}
+        <div className="space-y-6 mb-12">
           {post.content.map((para, i) => (
-            <p key={i} className="text-sm sm:text-base text-gray-600 leading-relaxed">
+            <p key={i} className="text-base sm:text-lg text-gray-600 leading-relaxed">
               {para}
             </p>
           ))}
         </div>
 
+        {/* CTA */}
         <div className="pt-8 border-t border-gray-200/60 mb-16">
           <Link
             to="/contact"
@@ -76,6 +82,7 @@ export default function BlogPost() {
           </Link>
         </div>
 
+        {/* Related Articles */}
         {related.length > 0 && (
           <div className="border-t border-gray-200/60 pt-10">
             <h2 className="font-display text-lg font-bold text-gray-900 mb-6">More in {post.category}</h2>
