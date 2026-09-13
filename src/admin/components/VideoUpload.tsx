@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Film } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 
-interface ImageUploadProps {
+interface VideoUploadProps {
   label?: string;
   value?: string;
   preview?: string;
@@ -12,8 +12,8 @@ interface ImageUploadProps {
   required?: boolean;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({
-  label = 'Image',
+export const VideoUpload: React.FC<VideoUploadProps> = ({
+  label = 'Video',
   value,
   preview,
   onChange,
@@ -25,28 +25,29 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const { addNotification } = useUIStore();
 
   const handleFileSelect = (file: File) => {
-    console.log('📁 ImageUpload.handleFileSelect called:', {
+    console.log('🎬 VideoUpload.handleFileSelect called:', {
       fileName: file.name,
       fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
       fileType: file.type,
     });
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    // Validate file type - accept video files
+    if (!file.type.startsWith('video/')) {
       console.error('❌ Invalid file type:', file.type);
       addNotification({
         type: 'error',
-        message: 'Please select a valid image file',
+        message: 'Please select a valid video file',
       });
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max 100MB for videos)
+    const maxSize = 100 * 1024 * 1024;
+    if (file.size > maxSize) {
       console.error('❌ File too large:', file.size);
       addNotification({
         type: 'error',
-        message: 'Image must be less than 10MB',
+        message: 'Video must be less than 100MB',
       });
       return;
     }
@@ -55,14 +56,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     onChange(file);
     console.log('✅ onChange callback executed');
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      console.log('📸 Preview created, calling onPreviewChange...');
-      onPreviewChange(e.target?.result as string);
-      console.log('✅ onPreviewChange callback executed');
-    };
-    reader.readAsDataURL(file);
+    // For video preview, just use the filename (no binary preview)
+    const previewText = `📹 ${file.name}`;
+    console.log('🎞️ Video preview text:', previewText);
+    onPreviewChange(previewText);
+    console.log('✅ onPreviewChange callback executed');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,41 +119,45 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         >
           <input
             type="file"
-            accept="image/*"
+            accept="video/*"
             onChange={handleInputChange}
             disabled={disabled}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div className="px-4 py-6 text-center">
-            <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+            <Film className="w-6 h-6 mx-auto mb-2 text-gray-400" />
             <p className="text-sm text-gray-600 font-medium">Click to upload or drag and drop</p>
-            <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF, WebP up to 10MB</p>
+            <p className="text-xs text-gray-500 mt-1">MP4, WebM, MOV, AVI up to 100MB</p>
           </div>
         </div>
 
-        {/* Image Preview */}
+        {/* Video Info Preview */}
         {preview && (
           <div className="relative">
-            <img
-              src={preview}
-              alt="Preview"
-              className="w-full h-48 object-cover rounded-lg border border-gray-200"
-            />
-            <button
-              type="button"
-              onClick={handleRemove}
-              disabled={disabled}
-              className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors disabled:opacity-50"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="w-full h-32 bg-gray-900 rounded-lg border border-gray-200 flex items-center justify-center relative">
+              <div className="text-center">
+                <Film className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                <p className="text-white text-sm font-semibold">Video Selected</p>
+                <p className="text-gray-400 text-xs mt-2 max-w-xs truncate px-4">
+                  {preview}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemove}
+                disabled={disabled}
+                className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Current Image Info */}
+        {/* Current Video Info */}
         {value && !preview && (
           <div className="text-xs text-gray-500 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            ✓ Current image is saved
+            ✓ Current video is saved
           </div>
         )}
       </div>

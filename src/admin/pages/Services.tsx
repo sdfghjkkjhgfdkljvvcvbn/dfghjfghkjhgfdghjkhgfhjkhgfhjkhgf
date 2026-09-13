@@ -15,6 +15,7 @@ interface Service {
   icon?: string;
   is_active?: boolean;
   isActive?: boolean;
+  display_order?: number;
   created_at?: string;
   createdAt?: string;
 }
@@ -34,6 +35,17 @@ export const Services: React.FC = () => {
 
   useEffect(() => {
     loadServices();
+    
+    // Set up subscription cleanup
+    const subscription = servicesService.subscribe((payload: any) => {
+      console.log('Services update:', payload);
+      loadServices();
+    });
+
+    // Return cleanup function from useEffect
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const loadServices = async () => {
@@ -42,13 +54,6 @@ export const Services: React.FC = () => {
       const data = await servicesService.getAll();
       console.log('Loaded services:', data);
       setServices(data || []);
-      
-      const subscription = servicesService.subscribe((payload: any) => {
-        console.log('Services update:', payload);
-        loadServices();
-      });
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
       console.error('Error loading services:', error);
       addNotification({
@@ -104,12 +109,16 @@ export const Services: React.FC = () => {
           message: 'Service updated',
         });
       } else {
+        // Find the next display_order value
+        const maxOrder = Math.max(...services.map(s => (s.display_order || 0)), 0);
+        
         await servicesService.create({
           id: Date.now().toString(),
           name: formData.name,
           description: formData.description,
           icon: formData.icon,
           is_active: formData.isActive,
+          display_order: maxOrder + 1,
         });
         addNotification({
           type: 'success',
@@ -122,7 +131,7 @@ export const Services: React.FC = () => {
       console.error('Error saving service:', error);
       addNotification({
         type: 'error',
-        message: 'Failed to save service',
+        message: 'Failed to save service: ' + (error.message || 'Unknown error'),
       });
     }
   };

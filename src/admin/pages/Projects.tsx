@@ -48,19 +48,12 @@ export const Projects: React.FC = () => {
       const data = await projectsService.getAll();
       console.log('Loaded projects from Supabase:', data);
       setProjects(data || []);
-      
-      // Subscribe to real-time changes
-      const subscription = projectsService.subscribe((payload: any) => {
-        console.log('Real-time update received:', payload);
-        loadProjects(); // Reload when changes happen
-      });
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
       console.error('Error loading projects:', error);
+      const errorMsg = error.message || 'Failed to load projects: Unknown error';
       addNotification({
         type: 'error',
-        message: 'Failed to load projects: ' + (error.message || 'Unknown error'),
+        message: errorMsg,
       });
     } finally {
       setLoading(false);

@@ -8,11 +8,11 @@ import {
   FileText,
   Briefcase,
   Palette,
-  Package,
   Settings,
   LogOut,
   Menu,
   X,
+  ExternalLink,
 } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
 import { useAuthStore } from '../store/authStore';
@@ -32,9 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Projects', href: '/admin/projects', icon: <Briefcase className="w-5 h-5" /> },
   { label: 'Blog', href: '/admin/blog', icon: <FileText className="w-5 h-5" /> },
   { label: 'Services', href: '/admin/services', icon: <Palette className="w-5 h-5" /> },
-  { label: 'Packages', href: '/admin/packages', icon: <Package className="w-5 h-5" /> },
   { label: 'Happy Clients', href: '/admin/happy-clients', icon: <MessageSquare className="w-5 h-5" /> },
-  { label: 'Theme', href: '/admin/theme', icon: <Palette className="w-5 h-5" /> },
   { label: 'Settings', href: '/admin/settings', icon: <Settings className="w-5 h-5" /> },
 ];
 
@@ -123,6 +121,17 @@ export const Sidebar: React.FC = () => {
 
           {/* User Section */}
           <div className="px-3 py-4 border-t border-gray-800">
+            {/* View Website Button */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View Website
+            </a>
+
             <div className="px-4 py-3 mb-3 bg-gray-800 rounded-lg">
               <p className="text-xs text-gray-500 mb-1">Logged in as</p>
               <p className="text-sm font-semibold text-white truncate">
