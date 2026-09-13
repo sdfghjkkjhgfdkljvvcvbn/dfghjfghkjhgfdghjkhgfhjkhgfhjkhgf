@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { NotificationCenter } from './NotificationCenter';
 import { useAuthStore } from '../store/authStore';
 
 interface DashboardLayoutProps {
@@ -47,6 +48,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           {children}
         </div>
       </main>
+
+      {/* Notification Center */}
+      <NotificationCenter />
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import { useState } from "react";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import BookingModal from "./components/BookingModal";
@@ -16,6 +16,17 @@ import About from "./pages/About";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AdminRouter } from "./admin/AdminRouter";
+
+// Scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 // Public layout wrapper containing the navigation shells and floating shortcuts
 function PublicLayout() {
@@ -36,6 +47,7 @@ function PublicLayout() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <CustomCursor />
       <Routes>
         {/* New Admin Panel Routes */}

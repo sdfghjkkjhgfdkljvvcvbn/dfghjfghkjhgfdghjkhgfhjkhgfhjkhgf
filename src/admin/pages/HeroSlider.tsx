@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, Edit2, GripVertical, Upload, X } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/Card';
 import { Button } from '../components/Button';
@@ -30,10 +30,13 @@ export const HeroSlider: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     headline: '',
     subheading: '',
     imageUrl: '',
+    imageFile: null as File | null,
+    imagePreview: '',
     buttonText: '',
     buttonLink: '',
     status: 'Draft' as 'Draft' | 'Published' | 'Scheduled',
@@ -53,7 +56,17 @@ export const HeroSlider: React.FC = () => {
         .select('*')
         .order('display_order', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        const errorMsg = error.message || 'Failed to load slides. Make sure the hero_slides table exists in Supabase.';
+        console.error('Load error:', errorMsg);
+        addNotification({
+          type: 'error',
+          message: errorMsg,
+        });
+        setSlides([]);
+        return;
+      }
+      
       console.log('Loaded hero slides:', data);
       setSlides(data || []);
       
@@ -67,10 +80,11 @@ export const HeroSlider: React.FC = () => {
       
       return () => subscription?.unsubscribe();
     } catch (error: any) {
-      console.error('Error loading slides:', error);
+      const errorMsg = error.message || 'Unexpected error loading slides';
+      console.error('Error loading slides:', errorMsg);
       addNotification({
         type: 'error',
-        message: 'Failed to load slides',
+        message: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -82,6 +96,8 @@ export const HeroSlider: React.FC = () => {
       headline: '',
       subheading: '',
       imageUrl: '',
+      imageFile: null,
+      imagePreview: '',
       buttonText: '',
       buttonLink: '',
       status: 'Draft',
@@ -89,6 +105,67 @@ export const HeroSlider: React.FC = () => {
     });
     setEditingSlide(null);
     setShowForm(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      addNotification({
+        type: 'error',
+        message: 'Please select a valid image file',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      addNotification({
+        type: 'error',
+        message: 'Image must be less than 5MB',
+      });
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setFormData((prev) => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: e.target?.result as string,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `hero-slides/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('hero-slides')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('hero-slides')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to upload image';
+      console.error('Image upload error:', errorMsg);
+      throw new Error(errorMsg);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleEditSlide = (slide: HeroSlide) => {
@@ -114,14 +191,29 @@ export const HeroSlider: React.FC = () => {
       return;
     }
 
+    if (!formData.imageFile && !formData.imageUrl && !editingSlide) {
+      addNotification({
+        type: 'error',
+        message: 'Image is required',
+      });
+      return;
+    }
+
     try {
+      let finalImageUrl = formData.imageUrl;
+
+      // Upload image if a new file was selected
+      if (formData.imageFile) {
+        finalImageUrl = await uploadImage(formData.imageFile);
+      }
+
       if (editingSlide) {
         const { error } = await supabase
           .from('hero_slides')
           .update({
             headline: formData.headline,
             subheading: formData.subheading,
-            image_url: formData.imageUrl,
+            image_url: finalImageUrl,
             button_text: formData.buttonText,
             button_link: formData.buttonLink,
             status: formData.status,
@@ -129,38 +221,44 @@ export const HeroSlider: React.FC = () => {
           })
           .eq('id', editingSlide.id);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw new Error(error.message || 'Failed to update slide');
+        }
         addNotification({
           type: 'success',
-          message: 'Slide updated',
+          message: 'Slide updated successfully',
         });
       } else {
         const { error } = await supabase
           .from('hero_slides')
           .insert({
-            id: Date.now().toString(),
             headline: formData.headline,
             subheading: formData.subheading,
-            image_url: formData.imageUrl,
+            image_url: finalImageUrl,
             button_text: formData.buttonText,
             button_link: formData.buttonLink,
             status: formData.status,
             display_order: formData.displayOrder,
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw new Error(error.message || 'Failed to add slide');
+        }
         addNotification({
           type: 'success',
-          message: 'Slide added',
+          message: 'Slide added successfully',
         });
       }
       setShowForm(false);
       await loadSlides();
     } catch (error: any) {
-      console.error('Error saving slide:', error);
+      const errorMessage = error.message || 'Failed to save slide';
+      console.error('Error saving slide:', errorMessage);
       addNotification({
         type: 'error',
-        message: 'Failed to save slide',
+        message: errorMessage,
       });
     }
   };
@@ -173,17 +271,23 @@ export const HeroSlider: React.FC = () => {
           .delete()
           .eq('id', id);
         
-        if (error) throw error;
+        if (error) {
+          const errorMsg = error.message || 'Failed to delete slide';
+          console.error('Delete error:', errorMsg);
+          throw new Error(errorMsg);
+        }
+        
         addNotification({
           type: 'success',
-          message: 'Slide deleted',
+          message: 'Slide deleted successfully',
         });
         await loadSlides();
       } catch (error: any) {
-        console.error('Error deleting slide:', error);
+        const errorMsg = error.message || 'Failed to delete slide';
+        console.error('Error deleting slide:', errorMsg);
         addNotification({
           type: 'error',
-          message: 'Failed to delete slide',
+          message: errorMsg,
         });
       }
     }
@@ -215,8 +319,8 @@ export const HeroSlider: React.FC = () => {
                 <Button variant="secondary" onClick={() => setShowForm(false)}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSaveSlide}>
-                  {editingSlide ? 'Update' : 'Add'} Slide
+                <Button variant="primary" onClick={handleSaveSlide} disabled={uploading}>
+                  {uploading ? 'Uploading...' : (editingSlide ? 'Update' : 'Add')} Slide
                 </Button>
               </>
             }
@@ -237,12 +341,59 @@ export const HeroSlider: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, subheading: e.target.value })}
               />
 
-              <Input
-                label="Image URL"
-                placeholder="Background image URL"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-              />
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Hero Image *
+                </label>
+                <div className="space-y-3">
+                  {/* Upload Input */}
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className="px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-600 hover:bg-red-50 transition-colors text-center">
+                      <Upload className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  </div>
+
+                  {/* Image Preview */}
+                  {formData.imagePreview && (
+                    <div className="relative">
+                      <img
+                        src={formData.imagePreview}
+                        alt="Preview"
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            imageFile: null,
+                            imagePreview: '',
+                          }))
+                        }
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Current Image for Editing */}
+                  {editingSlide && formData.imageUrl && !formData.imagePreview && (
+                    <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
+                      Current image is saved
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <Input
                 label="Button Text"

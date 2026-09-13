@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
 // Pages
@@ -16,13 +16,34 @@ import { Theme } from './pages/Theme';
 import { Settings } from './pages/Settings';
 import { HappyClients } from './pages/HappyClients';
 
+// Protected Route Component
+const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
+  const { isAuthenticated } = useAuthStore();
+  return isAuthenticated ? element : <Navigate to="/admin/login" replace />;
+};
+
 export const AdminRouter: React.FC = () => {
   const { isAuthenticated, checkAuth } = useAuthStore();
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    const authenticate = async () => {
+      await checkAuth();
+      setIsLoading(false);
+    };
+    authenticate();
   }, [checkAuth]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-white">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -30,23 +51,23 @@ export const AdminRouter: React.FC = () => {
       <Route path="/login" element={<Login />} />
 
       {/* Dashboard Routes (Protected) */}
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/enquiries" element={<Enquiries />} />
-      <Route path="/hero-slider" element={<HeroSlider />} />
-      <Route path="/gallery" element={<Gallery />} />
-      <Route path="/projects" element={<Projects />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/services" element={<Services />} />
-      <Route path="/packages" element={<Packages />} />
-      <Route path="/theme" element={<Theme />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/happy-clients" element={<HappyClients />} />
+      <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+      <Route path="/enquiries" element={<ProtectedRoute element={<Enquiries />} />} />
+      <Route path="/hero-slider" element={<ProtectedRoute element={<HeroSlider />} />} />
+      <Route path="/gallery" element={<ProtectedRoute element={<Gallery />} />} />
+      <Route path="/projects" element={<ProtectedRoute element={<Projects />} />} />
+      <Route path="/blog" element={<ProtectedRoute element={<Blog />} />} />
+      <Route path="/services" element={<ProtectedRoute element={<Services />} />} />
+      <Route path="/packages" element={<ProtectedRoute element={<Packages />} />} />
+      <Route path="/theme" element={<ProtectedRoute element={<Theme />} />} />
+      <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
+      <Route path="/happy-clients" element={<ProtectedRoute element={<HappyClients />} />} />
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Default redirect - if authenticated go to dashboard, else go to login */}
+      <Route path="/" element={<Navigate to={isAuthenticated ? "/admin/dashboard" : "/admin/login"} replace />} />
 
       {/* 404 */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/admin/login" replace />} />
     </Routes>
   );
 };
