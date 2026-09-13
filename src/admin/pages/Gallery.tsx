@@ -4,9 +4,11 @@ import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { ImageUpload } from '../components/ImageUpload';
 import { Modal } from '../components/Modal';
 import { useUIStore } from '../store/uiStore';
 import { galleryService } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 interface GalleryImage {
   id: string;
@@ -26,6 +28,7 @@ interface GalleryImage {
 export const Gallery: React.FC = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [roomTypeFilter, setRoomTypeFilter] = useState('All');
   const [showForm, setShowForm] = useState(false);
   const [editingImage, setEditingImage] = useState<GalleryImage | null>(null);
@@ -33,7 +36,11 @@ export const Gallery: React.FC = () => {
     roomType: 'Bedroom',
     title: '',
     imageUrl: '',
+    imageFile: null as File | null,
+    imagePreview: '',
     beforeImage: '',
+    beforeImageFile: null as File | null,
+    beforeImagePreview: '',
     isBeforeAfter: false,
   });
   const { addNotification } = useUIStore();
@@ -77,11 +84,39 @@ export const Gallery: React.FC = () => {
       roomType: 'Bedroom',
       title: '',
       imageUrl: '',
+      imageFile: null,
+      imagePreview: '',
       beforeImage: '',
+      beforeImageFile: null,
+      beforeImagePreview: '',
       isBeforeAfter: false,
     });
     setEditingImage(null);
     setShowForm(true);
+  };
+
+  const uploadImage = async (file: File, folder: string): Promise<string> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to upload image';
+      console.error('Image upload error:', errorMsg);
+      throw new Error(errorMsg);
+    }
   };
 
   const handleEditImage = (image: GalleryImage) => {
@@ -89,7 +124,11 @@ export const Gallery: React.FC = () => {
       roomType: image.room_type || image.roomType || 'Bedroom',
       title: image.title || '',
       imageUrl: image.image_url || image.imageUrl || '',
+      imageFile: null,
+      imagePreview: '',
       beforeImage: image.before_image_url || image.beforeImage || '',
+      beforeImageFile: null,
+      beforeImagePreview: '',
       isBeforeAfter: image.is_before_after || image.isBeforeAfter || false,
     });
     setEditingImage(image);
@@ -97,49 +136,82 @@ export const Gallery: React.FC = () => {
   };
 
   const handleSaveImage = async () => {
-    if (!formData.title.trim() || !formData.imageUrl.trim()) {
+    if (!formData.title.trim()) {
       addNotification({
         type: 'error',
-        message: 'Title and image URL are required',
+        message: 'Title is required',
+      });
+      return;
+    }
+
+    if (!formData.imageFile && !formData.imageUrl && !editingImage) {
+      addNotification({
+        type: 'error',
+        message: 'Image is required',
+      });
+      return;
+    }
+
+    if (formData.isBeforeAfter && !formData.beforeImageFile && !formData.beforeImage && !editingImage) {
+      addNotification({
+        type: 'error',
+        message: 'Before image is required for before/after',
       });
       return;
     }
 
     try {
+      setUploading(true);
+      let finalImageUrl = formData.imageUrl;
+      let finalBeforeImageUrl = formData.beforeImage;
+
+      // Upload main image
+      if (formData.imageFile) {
+        finalImageUrl = await uploadImage(formData.imageFile, 'gallery');
+      }
+
+      // Upload before image
+      if (formData.beforeImageFile) {
+        finalBeforeImageUrl = await uploadImage(formData.beforeImageFile, 'gallery/before');
+      }
+
       if (editingImage) {
         await galleryService.update(editingImage.id, {
           room_type: formData.roomType,
           title: formData.title,
-          image_url: formData.imageUrl,
-          before_image_url: formData.beforeImage,
+          image_url: finalImageUrl,
+          before_image_url: finalBeforeImageUrl,
           is_before_after: formData.isBeforeAfter,
         });
         addNotification({
           type: 'success',
-          message: 'Gallery image updated',
+          message: 'Gallery image updated successfully',
         });
       } else {
         await galleryService.create({
           id: Date.now().toString(),
           room_type: formData.roomType,
           title: formData.title,
-          image_url: formData.imageUrl,
-          before_image_url: formData.beforeImage,
+          image_url: finalImageUrl,
+          before_image_url: finalBeforeImageUrl,
           is_before_after: formData.isBeforeAfter,
         });
         addNotification({
           type: 'success',
-          message: 'Gallery image added',
+          message: 'Gallery image added successfully',
         });
       }
       setShowForm(false);
       await loadImages();
     } catch (error: any) {
-      console.error('Error saving image:', error);
+      const errorMsg = error.message || 'Failed to save image';
+      console.error('Error saving image:', errorMsg);
       addNotification({
         type: 'error',
-        message: 'Failed to save image',
+        message: errorMsg,
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -188,8 +260,8 @@ export const Gallery: React.FC = () => {
                 <Button variant="secondary" onClick={() => setShowForm(false)}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSaveImage}>
-                  {editingImage ? 'Update' : 'Add'} Image
+                <Button variant="primary" onClick={handleSaveImage} disabled={uploading}>
+                  {uploading ? 'Uploading...' : (editingImage ? 'Update' : 'Add')} Image
                 </Button>
               </>
             }
@@ -203,6 +275,7 @@ export const Gallery: React.FC = () => {
                   className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600"
                   value={formData.roomType}
                   onChange={(e) => setFormData({ ...formData, roomType: e.target.value })}
+                  disabled={uploading}
                 >
                   {roomTypes.filter(r => r !== 'All').map((type) => (
                     <option key={type} value={type}>
@@ -218,21 +291,17 @@ export const Gallery: React.FC = () => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
+                disabled={uploading}
               />
 
-              <Input
-                label="Image URL"
-                placeholder="Image path or URL"
+              <ImageUpload
+                label="Gallery Image"
                 value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                preview={formData.imagePreview}
+                onChange={(file) => setFormData({ ...formData, imageFile: file })}
+                onPreviewChange={(preview) => setFormData({ ...formData, imagePreview: preview })}
                 required
-              />
-
-              <Input
-                label="Before Image URL"
-                placeholder="Before image path (for before/after)"
-                value={formData.beforeImage}
-                onChange={(e) => setFormData({ ...formData, beforeImage: e.target.value })}
+                disabled={uploading}
               />
 
               <div className="flex items-center gap-2">
@@ -242,11 +311,24 @@ export const Gallery: React.FC = () => {
                   checked={formData.isBeforeAfter}
                   onChange={(e) => setFormData({ ...formData, isBeforeAfter: e.target.checked })}
                   className="w-4 h-4 accent-red-600"
+                  disabled={uploading}
                 />
                 <label htmlFor="isBeforeAfter" className="text-sm font-medium text-gray-900">
                   This is a before/after comparison
                 </label>
               </div>
+
+              {formData.isBeforeAfter && (
+                <ImageUpload
+                  label="Before Image"
+                  value={formData.beforeImage}
+                  preview={formData.beforeImagePreview}
+                  onChange={(file) => setFormData({ ...formData, beforeImageFile: file })}
+                  onPreviewChange={(preview) => setFormData({ ...formData, beforeImagePreview: preview })}
+                  required
+                  disabled={uploading}
+                />
+              )}
             </div>
           </Modal>
         )}

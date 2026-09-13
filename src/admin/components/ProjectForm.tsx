@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
+import { ImageUpload } from './ImageUpload';
 import { Modal } from './Modal';
+import { supabase } from '../services/supabaseClient';
+import { useUIStore } from '../store/uiStore';
 
 interface Project {
   id: string;
@@ -28,15 +31,47 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  const [uploading, setUploading] = useState(false);
+  const { addNotification } = useUIStore();
+  
   const [formData, setFormData] = useState({
     title: project?.title || '',
     description: project?.description || '',
     category: project?.category || categories[0],
     mediaUrl: project?.mediaUrl || '',
+    mediaFile: null as File | null,
+    mediaPreview: '',
     mediaType: project?.mediaType || 'image' as 'image' | 'video',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const uploadMedia = async (file: File): Promise<string> => {
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `projects/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('projects')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('projects')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to upload media';
+      console.error('Media upload error:', errorMsg);
+      throw new Error(errorMsg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -47,28 +82,44 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     }
-    if (!formData.mediaUrl.trim()) {
-      newErrors.mediaUrl = 'Media URL is required';
+    if (!formData.mediaFile && !formData.mediaUrl && !project) {
+      newErrors.mediaUrl = 'Media is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    onSave({
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      mediaUrl: formData.mediaUrl,
-      mediaType: formData.mediaType,
-    });
+    try {
+      let finalMediaUrl = formData.mediaUrl;
+
+      // Upload media if a new file was selected
+      if (formData.mediaFile) {
+        finalMediaUrl = await uploadMedia(formData.mediaFile);
+      }
+
+      onSave({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        mediaUrl: finalMediaUrl,
+        mediaType: formData.mediaType,
+      });
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to save project';
+      console.error('Error saving project:', errorMsg);
+      addNotification({
+        type: 'error',
+        message: errorMsg,
+      });
+    }
   };
 
   return (
@@ -79,11 +130,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel} disabled={uploading}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit}>
-            {project ? 'Update Project' : 'Add Project'}
+          <Button variant="primary" onClick={handleSubmit} disabled={uploading}>
+            {uploading ? 'Uploading...' : (project ? 'Update Project' : 'Add Project')}
           </Button>
         </>
       }
@@ -98,6 +149,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           error={errors.title}
           required
+          disabled={uploading}
         />
 
         {/* Description */}
@@ -106,7 +158,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             Description <span className="text-red-600">*</span>
           </label>
           <textarea
-            className={`w-full px-4 py-2.5 border-2 rounded-lg text-gray-900 placeholder-gray-500 transition-colors duration-200 focus:outline-none focus:border-red-600 resize-none ${
+            className={`w-full px-4 py-2.5 border-2 rounded-lg text-gray-900 placeholder-gray-500 transition-colors duration-200 focus:outline-none focus:border-red-600 resize-none disabled:opacity-50 ${
               errors.description
                 ? 'border-red-600 bg-red-50'
                 : 'border-gray-300 bg-white hover:border-gray-400'
@@ -117,6 +169,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
+            disabled={uploading}
           />
           {errors.description && (
             <p className="mt-1 text-sm text-red-600 font-medium">
@@ -131,11 +184,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             Category <span className="text-red-600">*</span>
           </label>
           <select
-            className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-red-600 bg-white hover:border-gray-400 transition-colors"
+            className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-red-600 bg-white hover:border-gray-400 transition-colors disabled:opacity-50"
             value={formData.category}
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
+            disabled={uploading}
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -164,6 +218,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                   })
                 }
                 className="w-4 h-4"
+                disabled={uploading}
               />
               <span className="text-sm text-gray-700">Image</span>
             </label>
@@ -180,49 +235,38 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                   })
                 }
                 className="w-4 h-4"
+                disabled={uploading}
               />
               <span className="text-sm text-gray-700">Video</span>
             </label>
           </div>
         </div>
 
-        {/* Media URL */}
-        <Input
-          label={`${formData.mediaType === 'image' ? 'Image' : 'Video'} URL`}
-          type="text"
-          placeholder={
-            formData.mediaType === 'image'
-              ? 'https://example.com/image.jpg'
-              : 'https://example.com/video.mp4 or Google Drive link'
-          }
-          value={formData.mediaUrl}
-          onChange={(e) =>
-            setFormData({ ...formData, mediaUrl: e.target.value })
-          }
-          error={errors.mediaUrl}
-          helperText={
-            formData.mediaType === 'video'
-              ? 'Support Google Drive links and direct video URLs'
-              : 'Direct image URL'
-          }
-          required
-        />
-
-        {/* Preview */}
-        {formData.mediaUrl && (
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs font-semibold text-gray-600 mb-2">Preview:</p>
-            <div className="h-32 bg-gray-200 rounded flex items-center justify-center text-gray-500">
-              {formData.mediaType === 'video' ? (
-                <div className="text-center">
-                  <div className="text-2xl mb-2">▶</div>
-                  <p className="text-xs">Video Preview</p>
-                </div>
-              ) : (
-                <p className="text-xs">[Image Preview]</p>
-              )}
-            </div>
-          </div>
+        {/* Media Upload/URL */}
+        {formData.mediaType === 'image' ? (
+          <ImageUpload
+            label="Project Image"
+            value={formData.mediaUrl}
+            preview={formData.mediaPreview}
+            onChange={(file) => setFormData({ ...formData, mediaFile: file })}
+            onPreviewChange={(preview) => setFormData({ ...formData, mediaPreview: preview })}
+            required
+            disabled={uploading}
+          />
+        ) : (
+          <Input
+            label="Video URL"
+            type="text"
+            placeholder="https://example.com/video.mp4 or Google Drive link"
+            value={formData.mediaUrl}
+            onChange={(e) =>
+              setFormData({ ...formData, mediaUrl: e.target.value })
+            }
+            error={errors.mediaUrl}
+            helperText="Support Google Drive links and direct video URLs"
+            required
+            disabled={uploading}
+          />
         )}
       </form>
     </Modal>
