@@ -84,13 +84,6 @@ export default function Services() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="#services"
-              className="inline-flex items-center px-8 py-3 bg-yellow-600 hover:bg-yellow-700 text-gray-900 font-bold text-sm uppercase tracking-wide rounded-lg transition-all hover:shadow-lg hover:translate-y-[-2px]"
-            >
-              View Packages
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-            <Link
               to="/contact"
               className="inline-flex items-center px-8 py-3 border-2 border-white text-white font-bold text-sm uppercase tracking-wide rounded-lg hover:bg-white hover:text-gray-900 transition-all"
             >

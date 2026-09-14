@@ -192,7 +192,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 ) : (
                   <>
                     Send enquiry
-                    <span className="group-hover:translate-x-1 transition-transform">✈️</span>
                   </>
                 )}
               </button>
@@ -200,11 +199,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               {/* Phone CTA */}
               <div className="text-center pt-2">
                 <a
-                  href="tel:+977-9857016066"
+                  href="tel:+977-9851350892"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-brand-red transition-colors"
                 >
                   <Phone className="h-4 w-4" />
-                  Or call +977 9857016066
+                  Or call +977 9851350892
                 </a>
               </div>
             </form>

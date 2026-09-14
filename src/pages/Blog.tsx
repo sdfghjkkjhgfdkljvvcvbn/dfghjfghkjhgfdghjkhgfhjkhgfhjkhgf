@@ -96,7 +96,7 @@ export default function Blog() {
                     {post.excerpt}
                   </p>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-gray-50 text-xs font-bold text-gray-600 group-hover:text-brand-red transition-colors">
+                  <div className="pt-3 flex items-center justify-between border-t border-gray-50 text-xs font-bold text-gray-600 group-hover:text-brand-red transition-colors -mx-6 px-6 py-3">
                     <span>Read article</span>
                     <ArrowRight className="h-4 w-4" />
                   </div>

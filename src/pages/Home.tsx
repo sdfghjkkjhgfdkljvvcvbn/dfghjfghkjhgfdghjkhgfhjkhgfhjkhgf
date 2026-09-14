@@ -304,7 +304,6 @@ export default function Home() {
               <video
                 width="100%"
                 height="100%"
-                controls
                 autoPlay
                 muted
                 loop
@@ -865,136 +864,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. PREMIUM ACCORDION-STYLE FAQ SECTION */}
-      <section id="faqs" className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Premium Section Header */}
-          <div className="text-center mb-20 space-y-6 opacity-0 animate-fade-in-up" style={{animationDelay: '0.1s', animationFillMode: 'forwards'}}>
-            <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
-              Have Questions?
-            </span>
-            <div className="space-y-4">
-              <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                Frequently Asked Questions
-              </h2>
-              <div className="flex justify-center">
-                <div className="h-1.5 w-20 bg-brand-red rounded-full shadow-sm" />
-              </div>
-            </div>
-            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-              Everything you need to know about our services, timelines, custom fabrication, and how we deliver premium interior solutions.
-            </p>
-          </div>
 
-          {/* Premium Accordion List */}
-          <div className="space-y-4 mb-16">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaq === faq.id;
-              return (
-                <div
-                  key={faq.id}
-                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-                    isOpen 
-                      ? "bg-white border-2 border-brand-red shadow-lg shadow-red-500/15" 
-                      : "bg-white border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300"
-                  }`}
-                >
-                  <button
-                    onClick={() => setOpenFaq(isOpen ? null : faq.id)}
-                    className="w-full text-left px-6 sm:px-8 py-7 flex justify-between items-center hover:bg-gray-50/50 transition-colors focus:outline-none group"
-                  >
-                    <div className="flex items-start gap-5 flex-1">
-                      {/* Premium Numbered Badge */}
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base shadow-md border-2 transition-all duration-300 ${
-                        isOpen 
-                          ? "bg-brand-red text-white border-brand-red" 
-                          : "bg-gray-100 text-gray-700 border-gray-200 group-hover:bg-brand-red/10 group-hover:border-brand-red/30"
-                      }`}>
-                        {String(index + 1).padStart(2, '0')}
-                      </div>
-                      <span className={`font-bold text-lg sm:text-xl transition-colors duration-300 ${
-                        isOpen ? "text-brand-red" : "text-gray-900 group-hover:text-brand-red"
-                      }`}>
-                        {faq.question}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={`h-6 w-6 text-brand-red flex-shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180" : "rotate-0"
-                      }`}
-                    />
-                  </button>
+      {/* Premium CTA Box - ARCHITECTURE STUDIO STYLE */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{boxShadow: '0 25px 60px rgba(220, 38, 38, 0.15)'}}>
+            
+            {/* Background Image */}
+            <img 
+              src="/background/backgound 1.png"
+              alt="Interior design background"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
 
-                  {/* Premium FAQ Content Box */}
-                  <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                      isOpen ? "max-h-96" : "max-h-0"
-                    }`}
-                  >
-                    <div className="px-6 sm:px-8 pb-8 pt-0 border-t-2 border-gray-100">
-                      <div className="ml-15 sm:ml-16 text-base sm:text-lg text-gray-700 leading-relaxed space-y-2">
-                        {faq.answer}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+            {/* Premium Red Overlay - Lighter for premium feel */}
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-red/35 via-brand-red/30 to-brand-red/25" />
 
-          {/* Premium CTA Box underneath FAQs - ARCHITECTURE STUDIO STYLE */}
-          <div className="relative py-16 sm:py-24 px-0 sm:px-8 opacity-0 animate-fade-in-up" style={{animationDelay: '0.3s', animationFillMode: 'forwards'}}>
-            {/* Premium CTA Panel */}
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{boxShadow: '0 25px 60px rgba(220, 38, 38, 0.15)'}}>
+            {/* Content Container */}
+            <div className="relative z-10 max-w-2xl p-8 sm:p-16">
               
-              {/* Background Image */}
-              <img 
-                src="/background/backgound 1.png"
-                alt="Interior design background"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+              {/* Eyebrow with accent line */}
+              <div className="flex items-center gap-3 mb-6 opacity-0 animate-fade-in-up" style={{animationDelay: '0.4s', animationFillMode: 'forwards'}}>
+                <div className="w-1 h-5 bg-yellow-400 rounded-full shadow-sm" />
+                <span className="text-xs font-extrabold tracking-widest text-yellow-300 uppercase">
+                  Ready to Begin?
+                </span>
+              </div>
 
-              {/* Premium Red Overlay - Lighter for premium feel */}
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-red/35 via-brand-red/30 to-brand-red/25" />
+              {/* Main Heading */}
+              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-4 opacity-0 animate-fade-in-up" style={{animationDelay: '0.45s', animationFillMode: 'forwards'}}>
+                Let's Create Your Perfect Space
+              </h2>
 
-              {/* Content Container */}
-              <div className="relative z-10 max-w-2xl p-8 sm:p-16">
-                
-                {/* Eyebrow with accent line */}
-                <div className="flex items-center gap-3 mb-6 opacity-0 animate-fade-in-up" style={{animationDelay: '0.4s', animationFillMode: 'forwards'}}>
-                  <div className="w-1 h-5 bg-yellow-400 rounded-full shadow-sm" />
-                  <span className="text-xs font-extrabold tracking-widest text-yellow-300 uppercase">
-                    Ready to Begin?
-                  </span>
-                </div>
+              {/* Supporting Paragraph */}
+              <p className="text-gray-100 text-sm sm:text-base leading-relaxed mb-8 max-w-xl opacity-0 animate-fade-in-up" style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
+                From concept to completion, thoughtful design and timeless interiors tailored for you.
+              </p>
 
-                {/* Main Heading */}
-                <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-4 opacity-0 animate-fade-in-up" style={{animationDelay: '0.45s', animationFillMode: 'forwards'}}>
-                  Let's Create Your Perfect Space
-                </h2>
-
-                {/* Supporting Paragraph */}
-                <p className="text-gray-100 text-sm sm:text-base leading-relaxed mb-8 max-w-xl opacity-0 animate-fade-in-up" style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
-                  From concept to completion, thoughtful design and timeless interiors tailored for you.
-                </p>
-
-                {/* CTA Button + Secondary Link */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 opacity-0 animate-fade-in-up" style={{animationDelay: '0.55s', animationFillMode: 'forwards'}}>
-                  <button
-                    onClick={() => setIsBookingModalOpen(true)}
-                    className="inline-flex items-center px-6 sm:px-8 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xs uppercase tracking-widest rounded-lg transition-all hover:shadow-lg hover:shadow-yellow-400/40 hover:translate-y-[-2px] gap-2 group"
-                  >
-                    Start Your Project
-                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-
+              {/* CTA Button + Secondary Link */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 opacity-0 animate-fade-in-up" style={{animationDelay: '0.55s', animationFillMode: 'forwards'}}>
+                <button
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="inline-flex items-center px-6 sm:px-8 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xs uppercase tracking-widest rounded-lg transition-all hover:shadow-lg hover:shadow-yellow-400/40 hover:translate-y-[-2px] gap-2 group"
+                >
+                  Start Your Project
+                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
 
             </div>
-          </div>
 
+          </div>
         </div>
       </section>
 
