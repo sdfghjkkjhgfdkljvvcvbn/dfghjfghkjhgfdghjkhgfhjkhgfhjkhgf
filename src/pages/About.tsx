@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Users, Clock, CheckCircle, MapPin, Phone, Mail, ChevronDown } from "lucide-react";
+import { ArrowRight, Award, Users, Clock, CheckCircle, MapPin, Phone, Mail } from "lucide-react";
 
 const stats = [
   { value: "150+", label: "Happy Clients", icon: Users },
@@ -13,85 +13,24 @@ const team = [
   {
     name: "Founder & Lead Designer",
     role: "Interior Design & Planning",
-    // Replace with actual image path
-    image: null,
+    image: null as string | null,
     bio: "Passionate about creating functional and beautiful spaces that reflect the client's personality and lifestyle.",
   },
   {
     name: "Senior Architect",
     role: "Structural & Construction",
-    image: null,
+    image: null as string | null,
     bio: "Expert in blending modern architecture with traditional Nepali design sensibilities for enduring results.",
   },
   {
     name: "Project Manager",
     role: "Execution & Client Relations",
-    image: null,
+    image: null as string | null,
     bio: "Ensures every project is delivered on time, within budget, and to the highest quality standards.",
   },
 ];
 
-const values = [
-  {
-    title: "Quality First",
-    description: "We use only premium materials and partner with skilled craftsmen to ensure every detail is built to last.",
-    icon: "🏆",
-  },
-  {
-    title: "Client-Centered",
-    description: "Your vision drives everything. We listen, collaborate, and refine until the result exceeds expectations.",
-    icon: "🤝",
-  },
-  {
-    title: "Transparent Process",
-    description: "No hidden costs, no surprises. We keep you informed at every stage from design to handover.",
-    icon: "💡",
-  },
-  {
-    title: "On-Time Delivery",
-    description: "We respect your time. Our structured project timelines ensure work is completed as promised.",
-    icon: "⏱️",
-  },
-];
-
-const faqs = [
-  {
-    question: "How much time does a typical interior design project take?",
-    answer: "Project timelines vary based on scope. A simple home makeover typically takes 3–4 months, while larger projects like full home renovations or commercial spaces can take 6–12 months. We provide a detailed timeline during the initial consultation.",
-  },
-  {
-    question: "What is your design process like?",
-    answer: "We follow a structured process: 1) Site visit and understanding your needs, 2) 3D design planning and visualization, 3) Material selection and quotation, 4) Fabrication in our workshop, 5) Installation and handover. Regular updates keep you informed at every stage.",
-  },
-  {
-    question: "Do you provide 3D visualizations before construction starts?",
-    answer: "Yes, absolutely. We create detailed 3D renderings of your space so you can visualize the final result before any work begins. This helps ensure the design aligns with your expectations and allows for easy modifications.",
-  },
-  {
-    question: "What services do you offer?",
-    answer: "We offer complete interior design and construction services including home interiors and decor, modular kitchens and furniture, WPC works (walls, ceilings, cladding), 3D planning and visualization, commercial office interiors, and project management from start to finish.",
-  },
-  {
-    question: "Can you work within my budget?",
-    answer: "Absolutely. We believe great design is possible at any budget. During consultation, we understand your financial constraints and create solutions that maximize value without compromising quality. Our in-house fabrication also helps us offer competitive pricing.",
-  },
-  {
-    question: "What areas do you serve?",
-    answer: "We primarily serve Kathmandu Valley including Kathmandu, Lalitpur (Patan), and Bhaktapur. We also undertake special projects in nearby regions. Contact us to discuss your specific location.",
-  },
-  {
-    question: "Do you provide a warranty on your work?",
-    answer: "Yes, we stand behind our work. We provide workmanship guarantees on all completed projects. Specific warranty periods depend on the type of work and materials used. We'll discuss this in detail during your consultation.",
-  },
-  {
-    question: "How do I get started?",
-    answer: "It's simple: Contact us via WhatsApp, email, or phone to schedule a free site visit. Our team will listen to your ideas, assess your space, and prepare a detailed quotation with timeline and design options. No obligation—just honest consultation.",
-  },
-];
-
 export default function About() {
-  const [openFaqId, setOpenFaqId] = useState<number | null>(0);
-
   useEffect(() => {
     document.title = "About Us | Parbati Interior Pvt. Ltd.";
   }, []);
@@ -99,57 +38,45 @@ export default function About() {
   return (
     <div className="overflow-x-hidden">
 
-      {/* ── HERO SECTION - BLOG POST CARD SIZE ──────────────────── */}
-      <section className="bg-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Hero Card - Same Size as Blog Post */}
-          <div className="relative h-80 sm:h-[450px] rounded-3xl overflow-hidden bg-gray-950 shadow-xl group border border-gray-100 mb-12">
-            <img
-              src="/about page/hero sesision  image.png"
-              alt="Parbati Interior Studio"
-              className="w-full h-full object-cover opacity-95 group-hover:opacity-100 transition-opacity duration-300"
-            />
-            {/* Overlay gradient for better contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-            
-            {/* Content Overlay */}
-            <div className="absolute inset-0 flex flex-col items-start justify-end p-6 sm:p-8">
-              <div className="space-y-2">
-                <span className="text-xs font-extrabold tracking-widest text-gray-900 uppercase bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg inline-block">
-                  About
-                </span>
-                <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
-                  Designing Spaces<br />Building Dreams
-                </h2>
-                <p className="text-sm sm:text-base text-gray-800 font-medium max-w-md">
-                  Parbati Interior Pvt. Ltd.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Content Below Card */}
-          <div className="text-center max-w-3xl mx-auto mb-8 space-y-3">
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+      {/* ── HERO BANNER ─────────────────────────────────────────── */}
+      <section className="relative bg-gray-900 py-28 sm:py-36 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(224, 224, 224, 0) 40px,rgba(255,255,255,.05) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,.05) 40px,rgba(255,255,255,.05) 41px)",
+          }}
+        />.
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <span className="text-xs font-extrabold tracking-widest text-red-400 uppercase bg-red-500/10 border border-red-500/20 px-3.5 py-1.5 rounded-md inline-block mb-6">
+            About Us
+          </span>
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
+            Designing Spaces.<br />
+            <span className="text-yellow-500 italic font-serif font-light">Building Dreams.</span>
+          </h1>
+          <p className="mt-6 text-gray-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+            Parbati Interior Pvt. Ltd. is a Kathmandu-based interior design and general construction company delivering premium spaces for homes, offices, and commercial properties across the Nepal valley.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-brand-red hover:bg-brand-red-dark text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-500/20 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-brand-red hover:bg-brand-red-dark text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-red-500/20 hover:-translate-y-0.5"
             >
               Get in Touch
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/projects"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-gray-300 hover:border-brand-red text-gray-700 hover:text-brand-red font-bold rounded-xl text-sm transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 border-2 border-white/30 hover:border-yellow-400 text-white hover:text-yellow-400 font-bold rounded-xl text-sm transition-all backdrop-blur-sm"
             >
               View Our Work
             </Link>
           </div>
-
         </div>
       </section>
 
@@ -175,26 +102,17 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* Image block — placeholder, swap with real photo */}
             <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3] bg-gray-100 flex items-center justify-center">
-                {/* Office Photo */}
-                <img 
-                  src="/about page/parbati interior office.png" 
-                  alt="Parbati Interior Office" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3] bg-gray-100">
+                <img src="/hero.jpg" alt="Parbati Interior" className="w-full h-full object-cover" />
               </div>
-              {/* Floating accent card */}
               <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-brand-red text-white rounded-2xl px-6 py-4 shadow-xl shadow-red-500/20 z-10">
                 <p className="text-2xl font-extrabold font-display leading-none">8+</p>
                 <p className="text-xs font-bold tracking-wider uppercase mt-1 text-red-100">Years in Nepal</p>
               </div>
-              {/* Gold accent line */}
               <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-yellow-500 rounded-tl-2xl opacity-60" />
             </div>
 
-            {/* Content */}
             <div className="space-y-6">
               <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
                 Who We Are
@@ -230,224 +148,93 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── OUR VALUES ──────────────────────────────────────────── */}
+      {/* ── MEET THE TEAM ───────────────────────────────────────── */}
       <section className="py-24 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
             <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
-              What Drives Us
+              The People Behind the Work
             </span>
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Our Core Values
+              Meet Our Team
             </h2>
             <div className="flex justify-center">
               <div className="h-0.5 w-12 bg-yellow-500" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map(({ title, description, icon }) => (
-              <div key={title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg hover:border-brand-red transition-all duration-300 group cursor-pointer">
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-brand-red transition-colors mb-3">
-                  {title}
-                </h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{description}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {team.map(({ name, role, image, bio }) => (
+              <div key={name} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
+                <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden flex items-center justify-center">
+                  {image ? (
+                    <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                      <span className="text-gray-400 text-sm font-medium">[ Team Photo ]</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-6 space-y-2">
+                  <h3 className="font-display text-lg font-bold text-gray-900">{name}</h3>
+                  <p className="text-xs font-bold text-brand-red uppercase tracking-wider">{role}</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">{bio}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── MEET THE CHAIRPERSON ───────────────────────────────────── */}
+      {/* ── OUR WORKSPACE / STUDIO ──────────────────────────────── */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* LEFT: Chairperson Info */}
-            <div className="space-y-6">
+            <div className="space-y-6 order-2 lg:order-1">
               <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
-                Leadership
+                Our Workshop
               </span>
-              <div>
-                <h3 className="font-display text-4xl sm:text-5xl font-bold text-gray-900 mb-2">Chairperson</h3>
-                <p className="text-sm font-bold text-brand-red uppercase tracking-wider">Vision & Direction</p>
-              </div>
-              <div className="w-12 h-0.5 bg-yellow-500" />
-              <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                Visionary leader guiding Parbati Interior Pvt. Ltd. with expertise in interior design and construction. Committed to delivering premium, innovative solutions across Kathmandu Valley.
-              </p>
-            </div>
-
-            {/* RIGHT: Chairperson Image with Accent */}
-            <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-gray-100">
-                <img 
-                  src="/about page/chairperson image.jpg" 
-                  alt="Chairperson" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Floating accent card */}
-              <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-brand-red text-white rounded-2xl px-6 py-4 shadow-xl shadow-red-500/20 z-10">
-                <p className="text-2xl font-extrabold font-display leading-none">8+</p>
-                <p className="text-xs font-bold tracking-wider uppercase mt-1 text-red-100">Years Leading</p>
-              </div>
-              {/* Gold accent line */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 border-t-4 border-r-4 border-yellow-500 rounded-tr-2xl opacity-60" />
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── OUR WORKSPACE / STUDIO ──────────────────────────────── */}
-      <section className="py-24 lg:py-32 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-
-            {/* LEFT: VIDEO PLAYER - EXACT SIZE FROM HOMEPAGE */}
-            <div className="relative h-96 sm:h-[500px] lg:h-[550px] rounded-2xl overflow-hidden shadow-2xl">
-              <video
-                width="100%"
-                height="100%"
-                autoPlay
-                muted
-                loop
-                className="w-full h-full object-cover"
-              >
-                <source src="/our workplace/workplace.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* RIGHT: CONTENT - EXACT STYLING FROM HOMEPAGE */}
-            <div className="flex flex-col justify-center space-y-4 lg:space-y-6">
-              
-              {/* Label */}
-              <div className="text-center lg:text-left">
-                <span className="text-lg sm:text-xl font-extrabold tracking-widest text-gray-700 uppercase">
-                  About Interior
-                </span>
-              </div>
-
-              {/* Headline */}
-              <div className="space-y-2">
-                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-                  We provide the best architect & interior design services
-                </h2>
-              </div>
-
-              {/* Premium Highlight Box */}
-              <div className="bg-white border-l-4 border-brand-red p-6 space-y-2 shadow-sm">
-                <p className="text-gray-900 font-semibold text-sm leading-relaxed">
-                  Our signature design process comes standard...refresh, remodel, new and enjoyable design experience
-                </p>
-              </div>
-
-              {/* Supporting Paragraph */}
-              <p className="text-gray-700 text-base leading-relaxed max-w-lg">
-                We believe great design goes beyond aesthetics—it creates experiences and enhances daily life. Our team works closely with you to transform your vision into reality, balancing functionality, elegant materials, and seamless execution every step of the way.
-              </p>
-
-              {/* Button */}
-              <div className="pt-4">
-                <Link
-                  to="/services"
-                  className="inline-flex items-center px-8 py-3 bg-brand-red hover:bg-red-700 text-white font-bold text-sm uppercase tracking-wide transition-all hover:shadow-lg hover:translate-y-[-2px]"
-                >
-                  Discover More
-                </Link>
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── FAQ SECTION ─────────────────────────────────────────── */}
-      <section className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* Premium Section Header */}
-          <div className="text-center mb-20 space-y-6">
-            <span className="text-xs font-extrabold tracking-widest text-brand-red uppercase bg-red-50 px-3 py-1.5 rounded-md inline-block">
-              Have Questions?
-            </span>
-            <div className="space-y-4">
-              <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                Frequently Asked Questions
+              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                Built In-House. Delivered On-Site.
               </h2>
-              <div className="flex justify-center">
-                <div className="h-1.5 w-20 bg-brand-red rounded-full shadow-sm" />
+              <div className="w-12 h-0.5 bg-yellow-500" />
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Unlike most firms that outsource fabrication, we operate our own fully equipped woodworking and metal-welding workshop in Kathmandu. This means tighter quality control, faster turnaround, and full customization for every client.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "In-house woodworking & metal fabrication",
+                  "Custom furniture to exact dimensions",
+                  "WPC paneling, ceiling & cladding works",
+                  "Full turnkey project management",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-brand-red shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 order-1 lg:order-2">
+              <div className="col-span-2 rounded-2xl overflow-hidden aspect-video shadow-md">
+                <img src="/about_photo/20195898327467908.png" alt="Our workshop" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square shadow-sm">
+                <img src="/about_photo/6122149488002325.png" alt="Work in progress" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square shadow-sm">
+                <img src="/about_photo/Home Bathroom Ideas Transforming Homes in 2026.png" alt="Finished detail" className="w-full h-full object-cover" />
               </div>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-              Everything you need to know about our services, timelines, custom fabrication, and how we deliver premium interior solutions.
-            </p>
-          </div>
 
-          {/* Premium Accordion List */}
-          <div className="space-y-4 mb-16">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaqId === index;
-              return (
-                <div
-                  key={index}
-                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-                    isOpen 
-                      ? "bg-white border-2 border-brand-red shadow-lg shadow-red-500/15" 
-                      : "bg-white border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300"
-                  }`}
-                >
-                  <button
-                    onClick={() => setOpenFaqId(isOpen ? null : index)}
-                    className="w-full text-left px-6 sm:px-8 py-7 flex justify-between items-center hover:bg-gray-50/50 transition-colors focus:outline-none group"
-                  >
-                    <div className="flex items-start gap-5 flex-1">
-                      {/* Premium Numbered Badge */}
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base shadow-md border-2 transition-all duration-300 ${
-                        isOpen 
-                          ? "bg-brand-red text-white border-brand-red" 
-                          : "bg-gray-100 text-gray-700 border-gray-200 group-hover:bg-brand-red/10 group-hover:border-brand-red/30"
-                      }`}>
-                        {String(index + 1).padStart(2, '0')}
-                      </div>
-                      <span className={`font-bold text-lg sm:text-xl transition-colors duration-300 ${
-                        isOpen ? "text-brand-red" : "text-gray-900 group-hover:text-brand-red"
-                      }`}>
-                        {faq.question}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={`h-6 w-6 text-brand-red flex-shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180" : "rotate-0"
-                      }`}
-                    />
-                  </button>
-
-                  {/* Premium FAQ Content Box */}
-                  <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                      isOpen ? "max-h-96" : "max-h-0"
-                    }`}
-                  >
-                    <div className="px-6 sm:px-8 pb-8 pt-0 border-t-2 border-gray-100">
-                      <div className="ml-15 sm:ml-16 text-base sm:text-lg text-gray-700 leading-relaxed space-y-2">
-                        {faq.answer}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
 
       {/* ── CTA BANNER ──────────────────────────────────────────── */}
       <section className="py-20 bg-brand-red relative overflow-hidden">
-        {/* Subtle pattern */}
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
@@ -480,8 +267,6 @@ export default function About() {
               WhatsApp Us
             </a>
           </div>
-
-          {/* Contact details */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4 text-red-100 text-xs font-medium">
             <span className="flex items-center gap-1.5 justify-center">
               <MapPin className="h-3.5 w-3.5" /> Shantinagar-31, Kathmandu, Nepal
