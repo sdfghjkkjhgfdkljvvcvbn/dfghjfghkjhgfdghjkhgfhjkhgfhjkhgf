@@ -224,8 +224,8 @@ export function createApp() {
             title: proj.title,
             description: proj.description,
             category: proj.category,
-            mediaUrl: proj.media_urls && proj.media_urls[0] ? proj.media_urls[0].url : '',
-            mediaType: proj.media_urls && proj.media_urls[0] ? proj.media_urls[0].type : 'image',
+            mediaUrl: proj.media_url || '',
+            mediaType: proj.media_type || 'image',
             createdAt: proj.created_at
           }));
           return res.json(transformedProjects);

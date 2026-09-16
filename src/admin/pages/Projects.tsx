@@ -198,6 +198,13 @@ export const Projects: React.FC = () => {
                       </div>
                       <p className="text-white text-xs font-semibold">VIDEO</p>
                     </div>
+                  ) : (project.media_url || project.mediaUrl) ? (
+                    <img
+                      src={project.media_url || project.mediaUrl}
+                      alt={project.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   ) : (
                     <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600">
                       <ImageIcon className="w-8 h-8" />

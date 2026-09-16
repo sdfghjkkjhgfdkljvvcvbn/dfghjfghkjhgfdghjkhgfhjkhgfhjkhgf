@@ -1,14 +1,81 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { supabase } from "../admin/services/supabaseClient";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  image?: string;
+  is_active?: boolean;
+  display_order?: number;
+}
 
 export default function Services() {
   const location = useLocation();
   const { setIsBookingModalOpen } = useOutletContext<{ setIsBookingModalOpen: (open: boolean) => void }>();
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Static services (for features list display)
+  const staticServices = [
+    {
+      id: "interior-design",
+      title: "Interior Design & 3D Planning",
+      features: ["Site measurement", "Space planning", "3D visualization", "Material coordination"],
+    },
+    {
+      id: "modular-kitchens",
+      title: "Modular Kitchens & Furniture",
+      features: ["Modular kitchens", "Custom wardrobes", "TV units", "Custom furniture"],
+    },
+    {
+      id: "home-interiors",
+      title: "Home Interiors & Decor",
+      features: ["Living rooms", "Bedrooms", "False ceilings", "Interior finishing"],
+    },
+    {
+      id: "construction",
+      title: "Construction & WPC Works",
+      features: ["RCC and structural work", "WPC wall paneling", "Ceiling work", "General construction"],
+    },
+  ];
 
   useEffect(() => {
     document.title = "Our Services | Parbati Interior Pvt. Ltd.";
   }, []);
+
+  useEffect(() => {
+    loadServices();
+  }, []);
+
+  const loadServices = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.log('⚠️ Supabase error:', error);
+        setServices([]);
+      } else if (data && data.length > 0) {
+        console.log('✅ Loaded', data.length, 'services from Supabase');
+        setServices(data);
+      } else {
+        console.log('ℹ️ No services found in Supabase');
+        setServices([]);
+      }
+    } catch (error) {
+      console.error('Error loading services:', error);
+      setServices([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (location.hash) {
@@ -16,37 +83,6 @@ export default function Services() {
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [location]);
-
-  const services = [
-    {
-      id: "interior-design",
-      title: "Interior Design & 3D Planning",
-      description: "Thoughtful layouts, practical planning and realistic 3D visualization before execution.",
-      features: ["Site measurement", "Space planning", "3D visualization", "Material coordination"],
-      imgUrl: "/service/bed room decor.jpg",
-    },
-    {
-      id: "modular-kitchens",
-      title: "Modular Kitchens & Furniture",
-      description: "Custom kitchens, wardrobes and furniture designed around your space and lifestyle.",
-      features: ["Modular kitchens", "Custom wardrobes", "TV units", "Custom furniture"],
-      imgUrl: "/service/KITCHENS & FURNITURE.jpg",
-    },
-    {
-      id: "home-interiors",
-      title: "Home Interiors & Decor",
-      description: "Complete interior solutions that bring comfort, functionality and personality into your home.",
-      features: ["Living rooms", "Bedrooms", "False ceilings", "Interior finishing"],
-      imgUrl: "/service/HOME INTERIORS & DECOR.jpg",
-    },
-    {
-      id: "construction",
-      title: "Construction & WPC Works",
-      description: "Reliable construction and finishing work delivered with practical site execution.",
-      features: ["RCC and structural work", "WPC wall paneling", "Ceiling work", "General construction"],
-      imgUrl: "/service/CONSTRUCTION & WPC WORKS.jpg",
-    },
-  ];
 
   return (
     <div id="services-page" className="bg-white">
@@ -94,68 +130,91 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Services Cards Grid */}
+      {/* Services Cards Grid - DYNAMIC FROM ADMIN */}
       <section id="services" className="py-20 md:py-32 px-4 md:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 md:gap-8">
-            {services.map((service) => (
-              <div
-                key={service.id}
-                id={`service-section-${service.id}`}
-                className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200"
-              >
-                {/* Image Container */}
-                <div className="relative overflow-hidden bg-gray-200 h-48 md:h-56">
-                  <img
-                    src={service.imgUrl}
-                    alt={service.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <Loader2 className="h-10 w-10 text-brand-red animate-spin mb-4" />
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading services...</p>
+            </div>
+          ) : services.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 md:gap-8">
+              {services.map((service) => {
+                // Find matching static service for features
+                const staticService = staticServices.find(s => s.id === service.id);
+                return (
+                  <div
+                    key={service.id}
+                    id={`service-section-${service.id}`}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200"
+                  >
+                    {/* Image Container - FROM SUPABASE */}
+                    <div className="relative overflow-hidden bg-gray-200 h-48 md:h-56">
+                      {service.image ? (
+                        <img
+                          src={service.image}
+                          alt={service.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500">
+                          <span className="text-sm">No image</span>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Content Container */}
-                <div className="p-4 md:p-6 space-y-3">
-                  {/* Title */}
-                  <h3 className="text-lg md:text-xl font-bold text-gray-950">
-                    {service.title}
-                  </h3>
+                    {/* Content Container */}
+                    <div className="p-4 md:p-6 space-y-3">
+                      {/* Title - FROM SUPABASE */}
+                      <h3 className="text-lg md:text-xl font-bold text-gray-950">
+                        {service.name}
+                      </h3>
 
-                  {/* Description */}
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {service.description}
-                  </p>
+                      {/* Description - FROM SUPABASE */}
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {service.description}
+                      </p>
 
-                  {/* Features List */}
-                  <ul className="space-y-1 pt-2">
-                    {service.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-gray-700">
-                        <span className="text-red-600 font-bold mt-0 text-sm">›</span>
-                        <span className="text-xs md:text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                      {/* Features List - FROM STATIC OR SUPABASE */}
+                      {staticService && (
+                        <ul className="space-y-1 pt-2">
+                          {staticService.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-gray-700">
+                              <span className="text-red-600 font-bold mt-0 text-sm">›</span>
+                              <span className="text-xs md:text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
 
-                  {/* CTA Buttons */}
-                  <div className="pt-3 space-y-2 border-t border-gray-200">
-                    <button
-                      onClick={() => setIsBookingModalOpen(true)}
-                      className="w-full text-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-xs md:text-sm"
-                    >
-                      Book Free Consultation
-                    </button>
-                    <Link
-                      to={`/services/${service.id}`}
-                      className="block text-center text-red-600 hover:text-red-700 font-semibold text-xs md:text-sm transition-colors"
-                    >
-                      Explore Service
-                      <ArrowRight className="w-3 h-3 inline ml-1" />
-                    </Link>
+                      {/* CTA Buttons */}
+                      <div className="pt-3 space-y-2 border-t border-gray-200">
+                        <button
+                          onClick={() => setIsBookingModalOpen(true)}
+                          className="w-full text-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-xs md:text-sm"
+                        >
+                          Book Free Consultation
+                        </button>
+                        <Link
+                          to={`/services/${service.id}`}
+                          className="block text-center text-red-600 hover:text-red-700 font-semibold text-xs md:text-sm transition-colors"
+                        >
+                          Explore Service
+                          <ArrowRight className="w-3 h-3 inline ml-1" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No services available. Please add services in the admin panel.</p>
+            </div>
+          )}
         </div>
       </section>
 

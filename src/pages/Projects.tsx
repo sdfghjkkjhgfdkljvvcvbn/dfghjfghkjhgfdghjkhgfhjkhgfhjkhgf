@@ -37,14 +37,17 @@ export default function Projects() {
             category: proj.category,
             location: proj.location || '',
             date_label: proj.completion_date || '',
-            cover: proj.media_urls?.[0]?.url || '',
+            cover: proj.media_url || '', // Use singular media_url from schema
+            mediaUrl: proj.media_url || '', // Correctly map singular media_url
+            mediaType: proj.media_type || 'image', // Correctly get media_type
             intro: proj.description,
-            description: [proj.description],
-            gallery: proj.media_urls?.map((m: any) => ({ id: m.cloudinary_id, url: m.url, caption: '' })) || [],
+            description: proj.description,
+            gallery: proj.media_url ? [{ id: proj.id, url: proj.media_url, caption: '' }] : [], // Build gallery from single URL
             details: [],
             testimonial: { name: '', role: '', content: '', rating: 5 },
             published: proj.status === 'Published',
             sort_order: 0,
+            createdAt: proj.created_at,
             created_at: proj.created_at,
             updated_at: proj.updated_at
           }));
@@ -191,7 +194,7 @@ export default function Projects() {
                       <div className="relative w-full h-full">
                         {/* Static cover image fallback */}
                         <img
-                          src={(proj as any).mediaUrl.includes("drive.google.com") ? "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80" : transformDriveUrl((proj as any).mediaUrl, "image")}
+                          src={(proj as any).mediaUrl}
                           alt={proj.title}
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
@@ -211,7 +214,7 @@ export default function Projects() {
                     ) : (
                       <div className="relative w-full h-full">
                         <img
-                          src={transformDriveUrl((proj as any).mediaUrl, "image")}
+                          src={(proj as any).mediaUrl}
                           alt={proj.title}
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

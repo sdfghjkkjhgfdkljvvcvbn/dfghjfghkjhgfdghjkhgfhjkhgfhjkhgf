@@ -89,13 +89,14 @@ CREATE TABLE blog_posts (
 );
 
 -- ============================================
--- 6. SERVICES TABLE (WITH display_order)
+-- 6. SERVICES TABLE (WITH display_order and image)
 -- Matches Services.tsx code which orders by display_order
 -- ============================================
 CREATE TABLE services (
   id text PRIMARY KEY,
   name text NOT NULL,
   description text,
+  image text,
   icon text,
   is_active boolean DEFAULT true,
   display_order integer DEFAULT 0,
