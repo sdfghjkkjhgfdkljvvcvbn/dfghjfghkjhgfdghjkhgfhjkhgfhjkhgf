@@ -47,7 +47,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-5">
             <Link id="footer-logo-link" to="/" className="flex items-center group">
-              <img src="/logo/logo.png" alt="Parbati Interior Logo" className="h-16 w-auto object-contain" />
+              <img src="/logo/logo.jpeg" alt="Parbati Interior Logo" className="h-16 w-auto object-contain" />
             </Link>
           </div>
 

@@ -122,7 +122,7 @@ export default function AdminDashboard() {
       >
         {/* Logo */}
         <div className="p-4 border-b border-gray-800">
-          <img src="/logo/logo.png" alt="Parbati Interior" className={`object-contain ${isSidebarOpen ? "h-20 w-auto" : "h-12 w-auto"}`} />
+          <img src="/logo/logo.jpeg" alt="Parbati Interior" className={`object-contain ${isSidebarOpen ? "h-20 w-auto" : "h-12 w-auto"}`} />
         </div>
 
         {/* Navigation Tabs */}

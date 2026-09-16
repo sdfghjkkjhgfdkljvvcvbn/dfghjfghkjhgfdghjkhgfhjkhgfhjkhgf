@@ -282,7 +282,7 @@ export default function About() {
             <div className="relative">
               <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-gray-100">
                 <img 
-                  src="/about page/chairperson image.jpg" 
+                  src="/about page/chairperson photo.jpeg" 
                   alt="Chairperson" 
                   className="w-full h-full object-cover"
                 />

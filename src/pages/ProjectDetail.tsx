@@ -105,7 +105,7 @@ export default function ProjectDetail() {
           {/* Logo */}
           <div className="mb-6 flex justify-center">
             <img
-              src="/logo/logo.png"
+              src="/logo/logo.jpeg"
               alt="Parbati Interior Logo"
               className="h-24 w-24"
             />
