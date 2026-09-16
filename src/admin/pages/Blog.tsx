@@ -62,7 +62,20 @@ export const Blog: React.FC = () => {
     }
   };
 
-  const categories = ['Design Tip', 'Case Study', 'Industry Insight', 'Tutorial'];
+  const categories = [
+    'Design Tip',
+    'Case Study',
+    'Industry Insight',
+    'Tutorial',
+    'Behind The Scenes',
+    'Material Guide',
+    'Maintenance Tips',
+    'Project Showcase',
+    'Trends & News',
+    'How-To Guide',
+    'Client Story',
+    'Design Trends',
+  ];
 
   const handleAddPost = () => {
     setFormData({
