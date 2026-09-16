@@ -117,14 +117,14 @@ export const projectsService = {
 // BLOG POSTS QUERIES
 // ============================================
 export const blogService = {
-  async fetchAll(published = true) {
+  async fetchAll(publishedOnly = true) {
     let query = supabase.from('blog_posts').select('*');
-    if (published) query = query.eq('published', true);
+    if (publishedOnly) query = query.eq('status', 'Published');
     return query.order('created_at', { ascending: false });
   },
 
-  async fetchBySlug(slug: string) {
-    return supabase.from('blog_posts').select('*').eq('slug', slug).eq('published', true).single();
+  async fetchById(id: string) {
+    return supabase.from('blog_posts').select('*').eq('id', id).eq('status', 'Published').single();
   },
 
   async create(data: any) {

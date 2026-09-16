@@ -10,8 +10,8 @@ interface BlogPost {
   content: string;
   category: string;
   created_at: string;
-  cover_image?: string;
   author?: string;
+  cover_image?: string;
 }
 
 export default function BlogPost() {
@@ -90,14 +90,16 @@ export default function BlogPost() {
         </Link>
 
         {/* Hero Image */}
-        <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gray-950 mb-8 shadow-xl w-full">
-          {post.cover_image && (
+        <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gradient-to-br from-gray-300 to-gray-400 mb-8 shadow-xl w-full flex items-center justify-center">
+          {post.cover_image ? (
             <img
               src={post.cover_image}
               alt={post.title}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover opacity-90"
             />
+          ) : (
+            <p className="text-gray-600 text-lg font-light text-center px-4">{post.title}</p>
           )}
           <span className="absolute bottom-4 left-4 bg-brand-red text-white text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-md">
             {post.category}
@@ -162,8 +164,8 @@ export default function BlogPost() {
                   to={`/blog/${r.id}`}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1"
                 >
-                  <div className="h-32 overflow-hidden bg-gray-200">
-                    {r.cover_image && (
+                  <div className="h-32 overflow-hidden bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                    {r.cover_image ? (
                       <img
                         src={r.cover_image}
                         alt={r.title}
@@ -171,6 +173,8 @@ export default function BlogPost() {
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
+                    ) : (
+                      <p className="text-gray-500 text-xs font-light text-center px-2 line-clamp-2">{r.title}</p>
                     )}
                   </div>
                   <div className="p-4">

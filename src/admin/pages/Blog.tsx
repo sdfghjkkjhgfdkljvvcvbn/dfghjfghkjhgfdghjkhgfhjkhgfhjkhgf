@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Eye } from 'lucide-react';
+import { Plus, Trash2, Edit2, Eye, Upload } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/Card';
 import { Button } from '../components/Button';
@@ -7,6 +7,7 @@ import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
 import { useUIStore } from '../store/uiStore';
 import { blogService } from '../services/supabaseClient';
+import { uploadToCloudinary } from '../services/cloudinaryService';
 
 interface BlogPost {
   id: string;
@@ -27,6 +28,7 @@ export const Blog: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -34,6 +36,7 @@ export const Blog: React.FC = () => {
     content: '',
     author: '',
     status: 'Draft' as 'Draft' | 'Published' | 'Scheduled',
+    cover_image: '',
   });
   const { addNotification } = useUIStore();
 
@@ -69,6 +72,7 @@ export const Blog: React.FC = () => {
       content: '',
       author: '',
       status: 'Draft',
+      cover_image: '',
     });
     setEditingPost(null);
     setShowForm(true);
@@ -82,9 +86,33 @@ export const Blog: React.FC = () => {
       content: post.content || '',
       author: post.author || '',
       status: post.status || 'Draft',
+      cover_image: (post as any).cover_image || '',
     });
     setEditingPost(post);
     setShowForm(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const imageUrl = await uploadToCloudinary(file, 'blog');
+      setFormData({ ...formData, cover_image: imageUrl });
+      addNotification({
+        type: 'success',
+        message: 'Image uploaded successfully',
+      });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      addNotification({
+        type: 'error',
+        message: error.message || 'Failed to upload image',
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSavePost = async () => {
@@ -105,6 +133,7 @@ export const Blog: React.FC = () => {
           content: formData.content,
           author: formData.author,
           status: formData.status,
+          cover_image: formData.cover_image,
         });
         addNotification({
           type: 'success',
@@ -119,6 +148,7 @@ export const Blog: React.FC = () => {
           content: formData.content,
           author: formData.author,
           status: formData.status,
+          cover_image: formData.cover_image,
           created_at: new Date().toISOString(),
         });
         addNotification({
@@ -214,6 +244,48 @@ export const Blog: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Cover Image Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Cover Image
+                </label>
+                <div className="space-y-2">
+                  {formData.cover_image && (
+                    <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-gray-300 mb-2">
+                      <img
+                        src={formData.cover_image}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, cover_image: '' })}
+                        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                  <label className={`relative inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                    uploading
+                      ? 'border-gray-400 bg-gray-100'
+                      : 'border-gray-300 hover:border-red-600 hover:bg-red-50'
+                  }`}>
+                    <Upload className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      {uploading ? 'Uploading...' : 'Upload Image'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
               <Input

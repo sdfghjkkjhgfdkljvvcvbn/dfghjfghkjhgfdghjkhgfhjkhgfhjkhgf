@@ -9,10 +9,10 @@ interface BlogPost {
   excerpt: string;
   category: string;
   created_at: string;
-  cover_image?: string;
   content?: string;
   author?: string;
   status?: string;
+  cover_image?: string;
 }
 
 export default function Blog() {
@@ -107,7 +107,7 @@ export default function Blog() {
                 className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1"
               >
                 <div className="relative h-56 overflow-hidden bg-gray-200">
-                  {post.cover_image && (
+                  {post.cover_image ? (
                     <img
                       src={post.cover_image}
                       alt={post.title}
@@ -115,6 +115,10 @@ export default function Blog() {
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                      <p className="text-gray-500 text-sm font-light text-center px-4 line-clamp-3">{post.title}</p>
+                    </div>
                   )}
                   <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-xs py-1 px-2.5 rounded-md text-[10px] font-extrabold text-white uppercase tracking-wide">
                     {post.category}
