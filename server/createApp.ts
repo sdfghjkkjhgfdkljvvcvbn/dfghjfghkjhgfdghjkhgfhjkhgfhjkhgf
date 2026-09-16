@@ -2,6 +2,27 @@ import express from "express";
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+// Lazy Supabase initialization
+let supabase: SupabaseClient | null = null;
+
+function getSupabase() {
+  if (supabase) return supabase;
+  
+  // Try service role key first (for server-side full access), then fall back to anon key
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  
+  if (supabaseUrl && supabaseKey) {
+    console.log('✅ Initializing Supabase with SERVICE ROLE key...');
+    supabase = createClient(supabaseUrl, supabaseKey);
+    return supabase;
+  }
+  
+  console.log('❌ Supabase SERVICE_ROLE_KEY not found');
+  return null;
+}
 
 // Vercel serverless functions only allow writes under /tmp — everywhere else
 // in the deployment bundle is read-only at runtime. Note that /tmp itself is
@@ -183,10 +204,45 @@ export function createApp() {
   // 1. PUBLIC: Fetch all projects
   app.get("/api/projects", async (req, res) => {
     try {
+      // Try Supabase first
+      const sb = getSupabase();
+      if (sb) {
+        const { data, error } = await sb
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.log('⚠️ Supabase error:', JSON.stringify(error, null, 2));
+        }
+
+        if (!error && data && data.length > 0) {
+          console.log('✅ Fetched', data.length, 'projects from Supabase');
+          // Transform Supabase projects to legacy format for compatibility
+          const transformedProjects = data.map((proj: any) => ({
+            id: proj.id,
+            title: proj.title,
+            description: proj.description,
+            category: proj.category,
+            mediaUrl: proj.media_urls && proj.media_urls[0] ? proj.media_urls[0].url : '',
+            mediaType: proj.media_urls && proj.media_urls[0] ? proj.media_urls[0].type : 'image',
+            createdAt: proj.created_at
+          }));
+          return res.json(transformedProjects);
+        } else if (!error && (!data || data.length === 0)) {
+          console.log('⚠️ Supabase connected but no projects found in database');
+        }
+      } else {
+        console.log('⚠️ Supabase client not available');
+      }
+
+      // Fallback to JSON file
+      console.log('📁 Falling back to JSON file');
       const fileContent = await fs.readFile(PROJECTS_FILE, "utf-8");
       const projects = JSON.parse(fileContent);
       res.json(projects);
     } catch (error) {
+      console.error('❌ Error loading projects:', error);
       res.status(500).json({ error: "Failed to load projects." });
     }
   });

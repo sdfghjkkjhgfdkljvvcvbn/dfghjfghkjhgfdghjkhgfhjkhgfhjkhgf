@@ -4,22 +4,12 @@ import { Input } from './Input';
 import { ImageUpload } from './ImageUpload';
 import { Modal } from './Modal';
 import { useUIStore } from '../store/uiStore';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  mediaUrl: string;
-  mediaType: 'image' | 'video';
-  createdAt: string;
-  updatedAt?: string;
-}
+import { LegacyProject } from '../../types';
 
 interface ProjectFormProps {
-  project: Project | null;
+  project: LegacyProject | null;
   categories: string[];
-  onSave: (project: Omit<Project, 'id' | 'createdAt'>) => void;
+  onSave: (project: Omit<LegacyProject, 'id' | 'createdAt'>) => void;
   onCancel: () => void;
 }
 

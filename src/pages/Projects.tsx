@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Project } from "../types";
 import { transformDriveUrl } from "../utils/driveHelper";
 import { Filter, Eye, Play, Film, Image as ImageIcon, Loader2 } from "lucide-react";
+import { supabase } from "../admin/services/supabaseClient";
 
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,24 +16,76 @@ export default function Projects() {
     document.title = "Our Projects Showcase | Parbati Interior";
   }, []);
 
-  // Fetch projects from our backend
+  // Fetch projects from Supabase directly
   useEffect(() => {
     async function loadProjects() {
       try {
+        // Try Supabase first
+        const { data: supabaseData, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && supabaseData && supabaseData.length > 0) {
+          console.log('✅ Loaded projects from Supabase:', supabaseData.length);
+          // Transform to legacy format
+          const transformed = supabaseData.map((proj: any) => ({
+            id: proj.id,
+            slug: proj.slug || proj.id,
+            title: proj.title,
+            client: proj.client_name || '',
+            category: proj.category,
+            location: proj.location || '',
+            date_label: proj.completion_date || '',
+            cover: proj.media_urls?.[0]?.url || '',
+            intro: proj.description,
+            description: [proj.description],
+            gallery: proj.media_urls?.map((m: any) => ({ id: m.cloudinary_id, url: m.url, caption: '' })) || [],
+            details: [],
+            testimonial: { name: '', role: '', content: '', rating: 5 },
+            published: proj.status === 'Published',
+            sort_order: 0,
+            created_at: proj.created_at,
+            updated_at: proj.updated_at
+          }));
+          setProjects(transformed);
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to API
         const response = await fetch("/api/projects");
         if (response.ok) {
           const data = await response.json();
+          console.log('📁 Loaded projects from API:', data.length);
           setProjects(data);
         } else {
-          console.error("Failed to load projects from server.");
+          console.error("Failed to load projects from API");
         }
       } catch (error) {
-        console.error("Error fetching projects database:", error);
+        console.error("Error fetching projects:", error);
       } finally {
         setLoading(false);
       }
     }
     loadProjects();
+
+    // Real-time subscription
+    const subscription = supabase
+      .channel('projects-public-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'projects' 
+      }, () => {
+        console.log('Projects updated, reloading...');
+        loadProjects();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Supported Categories

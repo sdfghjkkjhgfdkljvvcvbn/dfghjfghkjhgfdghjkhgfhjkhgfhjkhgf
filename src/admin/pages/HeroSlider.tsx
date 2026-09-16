@@ -203,11 +203,13 @@ export const HeroSlider: React.FC = () => {
     setFormData({
       headline: slide.headline || '',
       subheading: slide.subheading || '',
-      imageUrl: slide.image_url || slide.imageUrl || '',
-      buttonText: slide.button_text || slide.buttonText || '',
-      buttonLink: slide.button_link || slide.buttonLink || '',
+      imageUrl: slide.image_url || '',
+      imageFile: null as any,
+      imagePreview: '',
+      buttonText: slide.button_text || '',
+      buttonLink: slide.button_link || '',
       status: slide.status || 'Draft',
-      displayOrder: slide.display_order || slide.displayOrder || 1,
+      displayOrder: slide.display_order || 1,
     });
     setEditingSlide(slide);
     setShowForm(true);

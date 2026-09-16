@@ -6,8 +6,9 @@ import { Button } from '../components/Button';
 import { ProjectForm } from '../components/ProjectForm';
 import { useUIStore } from '../store/uiStore';
 import { projectsService } from '../services/supabaseClient';
+import { LegacyProject } from '../../types';
 
-interface Project {
+interface ProjectData {
   id: string;
   title: string;
   description: string;
@@ -23,10 +24,10 @@ interface Project {
 }
 
 export const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<LegacyProject | null>(null);
   const { addNotification } = useUIStore();
 
   const categories = [
@@ -65,8 +66,18 @@ export const Projects: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleEditProject = (project: Project) => {
-    setEditingProject(project);
+  const handleEditProject = (project: ProjectData) => {
+    // Convert ProjectData to LegacyProject format for the form
+    const legacyProject: LegacyProject = {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      mediaUrl: project.mediaUrl || project.media_url || '',
+      mediaType: (project.mediaType || project.media_type || 'image') as 'image' | 'video',
+      createdAt: project.createdAt || project.created_at || new Date().toISOString(),
+    };
+    setEditingProject(legacyProject);
     setShowForm(true);
   };
 

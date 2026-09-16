@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Play, X, ChevronLeft, ChevronRight, ArrowRight, Film } from "lucide-react";
-import { Project } from "../types";
+import { LegacyProject } from "../types";
 import { transformDriveUrl } from "../utils/driveHelper";
 
 export default function WatchOurWork() {
-  const [videos, setVideos] = useState<Project[]>([]);
+  const [videos, setVideos] = useState<LegacyProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
@@ -14,7 +14,7 @@ export default function WatchOurWork() {
       try {
         const response = await fetch("/api/projects");
         if (response.ok) {
-          const data: Project[] = await response.json();
+          const data: LegacyProject[] = await response.json();
           setVideos(data.filter((p) => p.mediaType === "video"));
         }
       } catch (error) {

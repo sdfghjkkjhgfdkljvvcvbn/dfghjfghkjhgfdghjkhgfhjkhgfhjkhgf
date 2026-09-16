@@ -88,7 +88,7 @@ export default function Header({ onBookConsultation, isModalOpen }: HeaderProps)
           >
             {/* Logo Brand */}
             <Link id="logo-link" to="/" className={`flex items-center group transition-opacity ${isModalOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-              <img src="/logo/logo.jpeg" alt="Parbati Interior" className="h-16 w-auto object-contain" />
+              <img src="/logo/logo_for_parbati_interior (1).png" alt="Parbati Interior" className="h-20 w-auto object-contain" />
             </Link>
 
             {/* Desktop Navigation links */}

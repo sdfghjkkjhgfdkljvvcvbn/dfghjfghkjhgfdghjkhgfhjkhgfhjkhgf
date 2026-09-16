@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Phone, ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { supabase } from "../admin/services/supabaseClient";
 
 interface Slide {
   id: string;
@@ -12,7 +13,8 @@ interface Slide {
   backgroundImage: string;
 }
 
-const slides: Slide[] = [
+// Default fallback slides if Supabase is not available
+const defaultSlides: Slide[] = [
   {
     id: "living-room",
     headline: "Transforming Spaces",
@@ -62,8 +64,66 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider({ onBookConsultation }: HeroSliderProps) {
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch hero slides from Supabase
+  useEffect(() => {
+    async function fetchSlides() {
+      try {
+        const { data, error } = await supabase
+          .from('hero_slides')
+          .select('*')
+          .eq('status', 'Published')
+          .order('display_order', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching hero slides:', error);
+          setSlides(defaultSlides);
+        } else if (data && data.length > 0) {
+          // Transform Supabase data to match our Slide interface
+          const transformedSlides: Slide[] = data.map((slide: any) => ({
+            id: slide.id,
+            headline: slide.headline || '',
+            headlineAccent: slide.subheading || '',
+            supportingText: slide.headline || '',
+            secondarySupportText: slide.subheading || '',
+            backgroundImage: slide.image_url || '/slider/1.png',
+          }));
+          setSlides(transformedSlides);
+        } else {
+          // No slides in database, use defaults
+          setSlides(defaultSlides);
+        }
+      } catch (err) {
+        console.error('Failed to load slides:', err);
+        setSlides(defaultSlides);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSlides();
+
+    // Subscribe to real-time updates
+    const subscription = supabase
+      .channel('hero-slides-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'hero_slides' 
+      }, () => {
+        console.log('Hero slides updated, refetching...');
+        fetchSlides();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const goTo = (index: number) => {
     setActiveSlide(((index % slides.length) + slides.length) % slides.length);
@@ -72,12 +132,24 @@ export default function HeroSlider({ onBookConsultation }: HeroSliderProps) {
   const prevSlide = () => goTo(activeSlide - 1);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || slides.length === 0) return;
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
     }, AUTOPLAY_MS);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, slides.length]);
+
+  // Show loading state
+  if (loading || slides.length === 0) {
+    return (
+      <section className="relative bg-black overflow-hidden h-screen flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </section>
+    );
+  }
 
   const slide = slides[activeSlide];
 

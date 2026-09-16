@@ -166,3 +166,14 @@ export interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
 }
+
+// Legacy Project format for old admin pages
+export interface LegacyProject {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  mediaUrl: string;
+  mediaType: "image" | "video";
+  createdAt: string;
+}
