@@ -10,7 +10,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}
+        className={`bg-white rounded-[10px] border border-[#E5E1DA] shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}
         {...props}
       >
         {children}
@@ -32,14 +32,14 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 border-b border-gray-200 ${className}`}
+        className={`px-6 py-4 border-b border-[#E5E1DA] ${className}`}
         {...props}
       >
         {title && (
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-base font-semibold text-[#202124]">{title}</h3>
         )}
         {description && (
-          <p className="mt-1 text-sm text-gray-600">{description}</p>
+          <p className="mt-1 text-sm text-[#77736D]">{description}</p>
         )}
         {children}
       </div>
@@ -78,7 +78,7 @@ export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 border-t border-gray-200 flex gap-3 justify-end ${className}`}
+        className={`px-6 py-4 border-t border-[#E5E1DA] flex gap-3 justify-end ${className}`}
         {...props}
       >
         {children}

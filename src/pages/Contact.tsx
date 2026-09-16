@@ -236,7 +236,10 @@ export default function Contact() {
 
             {/* RIGHT COLUMN: Consultation Form */}
             <div className="lg:col-span-7 mt-12">
-              <div className="bg-white rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300 relative overflow-hidden">
+                {/* Red line at top */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-brand-red rounded-t-2xl"></div>
+                
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
                   <span className="w-1 h-8 bg-brand-red rounded-full"></span>
                   Request Free Site Consultation

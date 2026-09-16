@@ -46,21 +46,21 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
-        className={`relative bg-white rounded-lg shadow-lg w-full mx-4 max-h-[90vh] flex flex-col ${sizeClasses[size]}`}
+        className={`relative bg-white rounded-[10px] shadow-lg w-full mx-4 max-h-[90vh] flex flex-col border border-[#E5E1DA] ${sizeClasses[size]}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E1DA] flex-shrink-0">
+          <h2 className="text-lg font-light text-[#202124] tracking-tight">{title}</h2>
           {closeButton && (
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-[#77736D] hover:text-[#202124] transition-colors p-1 hover:bg-[#F7F6F2] rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -68,13 +68,13 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 overflow-y-auto flex-1">
+        <div className="px-6 py-5 overflow-y-auto flex-1">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end flex-shrink-0">
+          <div className="px-6 py-4 border-t border-[#E5E1DA] flex gap-3 justify-end flex-shrink-0 bg-[#F7F6F2]">
             {footer}
           </div>
         )}

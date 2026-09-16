@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  MessageSquare,
-  Briefcase,
+  Mail,
+  Home,
   Palette,
-  FileText,
+  BookOpen,
   ArrowRight,
-  TrendingUp,
 } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader } from '../components/Card';
@@ -20,7 +19,6 @@ interface MetricCard {
   subtitle: string;
   icon: React.ReactNode;
   href: string;
-  color: string;
 }
 
 interface Activity {
@@ -33,36 +31,32 @@ export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const [metrics, setMetrics] = useState<MetricCard[]>([
     {
-      title: 'New Enquiries',
+      title: 'Enquiries',
       value: 0,
-      subtitle: 'This month',
-      icon: <MessageSquare className="w-8 h-8" />,
+      subtitle: 'Total received',
+      icon: <Mail className="w-6 h-6" />,
       href: '/admin/enquiries',
-      color: 'text-blue-600',
     },
     {
       title: 'Projects',
       value: 0,
       subtitle: 'Published',
-      icon: <Briefcase className="w-8 h-8" />,
+      icon: <Home className="w-6 h-6" />,
       href: '/admin/projects',
-      color: 'text-green-600',
     },
     {
       title: 'Services',
       value: 0,
-      subtitle: 'Active',
-      icon: <Palette className="w-8 h-8" />,
+      subtitle: 'Available',
+      icon: <Palette className="w-6 h-6" />,
       href: '/admin/services',
-      color: 'text-purple-600',
     },
     {
       title: 'Blog Posts',
       value: 0,
       subtitle: 'Published',
-      icon: <FileText className="w-8 h-8" />,
+      icon: <BookOpen className="w-6 h-6" />,
       href: '/admin/blog',
-      color: 'text-orange-600',
     },
   ]);
 
@@ -93,24 +87,13 @@ export const Dashboard: React.FC = () => {
       // Build recent activities from all data
       const activities: Activity[] = [];
 
-      // Add blog posts
-      if (blogs && blogs.length > 0) {
-        blogs.slice(0, 2).forEach((blog: any) => {
+      // Add enquiries
+      if (enquiries && enquiries.length > 0) {
+        enquiries.slice(0, 3).forEach((enquiry: any) => {
           activities.push({
-            title: `Published "${blog.title}" blog post`,
-            time: new Date(blog.published_date || blog.created_at).toLocaleDateString(),
-            type: 'blog',
-          });
-        });
-      }
-
-      // Add services
-      if (services && services.length > 0) {
-        services.slice(0, 2).forEach((service: any) => {
-          activities.push({
-            title: `Added "${service.name}" service`,
-            time: new Date(service.created_at).toLocaleDateString(),
-            type: 'service',
+            title: `Enquiry from ${enquiry.name}`,
+            time: new Date(enquiry.created_at).toLocaleDateString(),
+            type: 'enquiry',
           });
         });
       }
@@ -119,64 +102,53 @@ export const Dashboard: React.FC = () => {
       if (projects && projects.length > 0) {
         projects.slice(0, 2).forEach((project: any) => {
           activities.push({
-            title: `Added "${project.title}" project`,
+            title: `${project.title}`,
             time: new Date(project.created_at).toLocaleDateString(),
             type: 'project',
           });
         });
       }
 
-      // Add enquiries
-      if (enquiries && enquiries.length > 0) {
-        enquiries.slice(0, 2).forEach((enquiry: any) => {
+      // Add services
+      if (services && services.length > 0) {
+        services.slice(0, 1).forEach((service: any) => {
           activities.push({
-            title: `New enquiry from ${enquiry.name}`,
-            time: new Date(enquiry.created_at).toLocaleDateString(),
-            type: 'enquiry',
+            title: `${service.name}`,
+            time: new Date(service.created_at).toLocaleDateString(),
+            type: 'service',
           });
         });
       }
 
-      setRecentActivities(activities.slice(0, 4));
+      setRecentActivities(activities.slice(0, 5));
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout pageTitle="Dashboard" pageDescription="Overview of your content and activity">
       <div className="space-y-8">
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.full_name || 'Admin'}!
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Here's an overview of your admin panel
-          </p>
-        </div>
-
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {metrics.map((metric, index) => (
             <Link key={index} to={metric.href}>
-              <Card className="hover:shadow-lg hover:border-red-200 transition-all cursor-pointer h-full">
+              <Card className="hover:shadow-md transition-all cursor-pointer h-full">
                 <CardBody className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className={metric.color}>
+                  <div className="flex items-start justify-between">
+                    <div className="text-[#8F2F2F]">
                       {metric.icon}
                     </div>
-                    <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm font-medium">
-                      {metric.title}
+                    <p className="text-[#77736D] text-xs font-light tracking-widest uppercase">
+                      {metric.subtitle}
                     </p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-4xl font-light text-[#202124] mt-2">
                       {metric.value}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {metric.subtitle}
+                    <p className="text-sm text-[#77736D] mt-3 font-light">
+                      {metric.title}
                     </p>
                   </div>
                 </CardBody>
@@ -187,31 +159,37 @@ export const Dashboard: React.FC = () => {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activities */}
+          {/* Recent Activity */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader title="Recent Activity" />
               <CardBody>
-                <div className="space-y-4">
-                  {recentActivities.map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between pb-4 border-b border-gray-200 last:border-0"
-                    >
-                      <div>
-                        <p className="text-gray-900 font-medium">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {activity.time}
-                        </p>
+                {recentActivities.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivities.map((activity, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between pb-4 border-b border-[#E5E1DA] last:border-0"
+                      >
+                        <div className="flex-1">
+                          <p className="text-[#202124] font-light">
+                            {activity.title}
+                          </p>
+                          <p className="text-xs text-[#77736D] mt-1">
+                            {activity.time}
+                          </p>
+                        </div>
+                        <div className="px-3 py-1 rounded-lg bg-[#F7F6F2] text-xs font-light text-[#77736D] capitalize">
+                          {activity.type}
+                        </div>
                       </div>
-                      <div className="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold text-gray-700 capitalize">
-                        {activity.type}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[#77736D] text-sm font-light text-center py-8">
+                    No activity yet
+                  </p>
+                )}
               </CardBody>
             </Card>
           </div>
@@ -219,32 +197,41 @@ export const Dashboard: React.FC = () => {
           {/* Quick Actions */}
           <div>
             <Card>
-              <CardHeader title="Quick Actions" />
-              <CardBody className="space-y-3">
+              <CardHeader title="Quick Access" />
+              <CardBody className="space-y-2">
                 <Link to="/admin/enquiries">
                   <Button
                     variant="secondary"
-                    className="w-full justify-between"
+                    className="w-full justify-between text-sm"
                   >
                     View Enquiries
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Link to="/admin/services">
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-between text-sm"
+                  >
+                    Manage Services
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
                 <Link to="/admin/projects">
                   <Button
                     variant="secondary"
-                    className="w-full justify-between"
+                    className="w-full justify-between text-sm"
                   >
-                    Add Project
+                    View Projects
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
-                <Link to="/admin/blog">
+                <Link to="/admin/gallery">
                   <Button
                     variant="secondary"
-                    className="w-full justify-between"
+                    className="w-full justify-between text-sm"
                   >
-                    Write Blog
+                    Gallery
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
@@ -252,45 +239,6 @@ export const Dashboard: React.FC = () => {
             </Card>
           </div>
         </div>
-
-        {/* Getting Started */}
-        <Card>
-          <CardHeader
-            title="Getting Started"
-            description="Follow these steps to set up your admin panel"
-          />
-          <CardBody>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-red-600 text-white rounded-lg flex items-center justify-center font-bold">
-                  1
-                </div>
-                <h4 className="font-semibold text-gray-900">Setup Services</h4>
-                <p className="text-sm text-gray-600">
-                  Create your service categories and packages
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-red-600 text-white rounded-lg flex items-center justify-center font-bold">
-                  2
-                </div>
-                <h4 className="font-semibold text-gray-900">Add Projects</h4>
-                <p className="text-sm text-gray-600">
-                  Upload your portfolio projects
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-red-600 text-white rounded-lg flex items-center justify-center font-bold">
-                  3
-                </div>
-                <h4 className="font-semibold text-gray-900">Customize Theme</h4>
-                <p className="text-sm text-gray-600">
-                  Personalize your branding and colors
-                </p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
       </div>
     </DashboardLayout>
   );

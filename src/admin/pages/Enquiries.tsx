@@ -176,15 +176,15 @@ export const Enquiries: React.FC = () => {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'new':
-        return 'bg-red-50 text-red-600';
-      case 'contacted':
         return 'bg-blue-50 text-blue-600';
+      case 'contacted':
+        return 'bg-amber-50 text-amber-600';
       case 'booked':
-        return 'bg-green-50 text-green-600';
+        return 'bg-emerald-50 text-emerald-600';
       case 'closed':
-        return 'bg-gray-50 text-gray-600';
+        return 'bg-[#F7F6F2] text-[#77736D]';
       default:
-        return 'bg-gray-50 text-gray-600';
+        return 'bg-[#F7F6F2] text-[#77736D]';
     }
   };
 
@@ -215,25 +215,20 @@ export const Enquiries: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout pageTitle="Enquiries" pageDescription={`Manage customer enquiries and bookings (${enquiries.length} total)`}>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Enquiries</h1>
-          <p className="text-gray-600 mt-2">Manage customer enquiries and follow-ups ({enquiries.length} total)</p>
-        </div>
 
         {loading ? (
           <Card>
             <CardBody className="text-center py-12">
-              <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-gray-600 mt-4">Loading enquiries...</p>
+              <div className="w-8 h-8 border-4 border-[#8F2F2F] border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-[#77736D] mt-4 font-light">Loading enquiries...</p>
             </CardBody>
           </Card>
         ) : enquiries.length === 0 ? (
           <Card>
             <CardBody className="text-center py-12">
-              <p className="text-gray-600 mb-4">No customer enquiries yet. They will appear here when customers submit the booking form on your website.</p>
+              <p className="text-[#77736D] font-light">No customer enquiries yet. They will appear here when customers submit the booking form on your website.</p>
             </CardBody>
           </Card>
         ) : (
@@ -246,13 +241,13 @@ export const Enquiries: React.FC = () => {
                   <div className="space-y-4">
                     {/* Search */}
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#77736D]" />
                       <input
                         type="text"
                         placeholder="Search by name, phone, email, service..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600"
+                        className="w-full pl-10 pr-4 py-2 border border-[#E5E1DA] rounded-lg focus:outline-none focus:border-[#8F2F2F] focus:ring-1 focus:ring-[#8F2F2F]/20"
                       />
                     </div>
 
@@ -268,10 +263,10 @@ export const Enquiries: React.FC = () => {
                         <button
                           key={filter.value}
                           onClick={() => setFilterStatus(filter.value)}
-                          className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
+                          className={`px-3 py-1.5 rounded-lg font-light text-sm transition-all ${
                             filterStatus === filter.value
-                              ? 'bg-red-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-[#8F2F2F] text-white'
+                              : 'bg-[#F7F6F2] text-[#77736D] hover:bg-[#EFEFEA]'
                           }`}
                         >
                           {filter.label} ({filter.count})
@@ -283,20 +278,20 @@ export const Enquiries: React.FC = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setSortBy('newest')}
-                        className={`px-3 py-1 text-sm rounded transition-all ${
+                        className={`px-3 py-1 text-sm rounded-lg transition-all font-light ${
                           sortBy === 'newest'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-[#8F2F2F] text-white'
+                            : 'bg-[#F7F6F2] text-[#77736D] hover:bg-[#EFEFEA]'
                         }`}
                       >
                         Newest First
                       </button>
                       <button
                         onClick={() => setSortBy('oldest')}
-                        className={`px-3 py-1 text-sm rounded transition-all ${
+                        className={`px-3 py-1 text-sm rounded-lg transition-all font-light ${
                           sortBy === 'oldest'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-[#8F2F2F] text-white'
+                            : 'bg-[#F7F6F2] text-[#77736D] hover:bg-[#EFEFEA]'
                         }`}
                       >
                         Oldest First
@@ -319,22 +314,22 @@ export const Enquiries: React.FC = () => {
                     <div
                       key={enquiry.id}
                       onClick={() => setSelectedEnquiry(enquiry)}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      className={`p-4 border rounded-[10px] cursor-pointer transition-all ${
                         selectedEnquiry?.id === enquiry.id
-                          ? 'border-red-600 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                          ? 'border-[#8F2F2F] bg-white shadow-md'
+                          : 'border-[#E5E1DA] hover:border-[#D4CDBF] bg-white'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-gray-900 truncate">{enquiry.name}</h3>
-                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${getStatusBadgeColor(enquiry.status)}`}>
+                            <h3 className="font-light text-[#202124] truncate">{enquiry.name}</h3>
+                            <span className={`px-2 py-0.5 text-xs font-light rounded-lg flex-shrink-0 ${getStatusBadgeColor(enquiry.status)}`}>
                               {getStatusLabel(enquiry.status)}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{enquiry.requirement}</p>
-                          <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                          <p className="text-sm text-[#77736D] mb-2 font-light">{enquiry.requirement}</p>
+                          <div className="flex flex-wrap gap-4 text-xs text-[#77736D]">
                             <div className="flex items-center gap-1">
                               <Phone className="w-3 h-3" />
                               {enquiry.phone}
@@ -366,23 +361,23 @@ export const Enquiries: React.FC = () => {
                     {/* Close Button */}
                     <button
                       onClick={() => setSelectedEnquiry(null)}
-                      className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
+                      className="absolute top-4 right-4 p-1 hover:bg-[#F7F6F2] rounded-full transition-colors"
                     >
-                      <X className="w-5 h-5 text-gray-400" />
+                      <X className="w-5 h-5 text-[#77736D]" />
                     </button>
 
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{selectedEnquiry.name}</h3>
-                      <p className="text-sm text-gray-600">{selectedEnquiry.requirement}</p>
+                      <h3 className="text-lg font-light text-[#202124] mb-1">{selectedEnquiry.name}</h3>
+                      <p className="text-sm text-[#77736D] font-light">{selectedEnquiry.requirement}</p>
                     </div>
 
                     {/* Status */}
                     <div>
-                      <label className="text-xs font-semibold text-gray-600 uppercase block mb-2">Status</label>
+                      <label className="text-xs font-light text-[#77736D] uppercase block mb-2 tracking-widest">Status</label>
                       <select
                         value={selectedEnquiry.status}
                         onChange={(e) => handleStatusChange(selectedEnquiry.id, e.target.value)}
-                        className={`w-full px-3 py-2 border-2 rounded-lg font-semibold text-sm focus:outline-none ${getStatusBadgeColor(selectedEnquiry.status)}`}
+                        className={`w-full px-3 py-2 border rounded-lg font-light text-sm focus:outline-none ${getStatusBadgeColor(selectedEnquiry.status)}`}
                       >
                         <option value="new">New</option>
                         <option value="contacted">Contacted</option>
@@ -392,17 +387,17 @@ export const Enquiries: React.FC = () => {
                     </div>
 
                     {/* Contact Info */}
-                    <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="space-y-2 p-3 bg-[#F7F6F2] rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-600 font-semibold">Phone</p>
-                        <a href={`tel:${selectedEnquiry.phone}`} className="text-sm text-red-600 hover:text-red-700 font-semibold">
+                        <p className="text-xs text-[#77736D] font-light">Phone</p>
+                        <a href={`tel:${selectedEnquiry.phone}`} className="text-sm text-[#8F2F2F] hover:text-[#7a2828] font-light">
                           {selectedEnquiry.phone}
                         </a>
                       </div>
                       {selectedEnquiry.email && (
                         <div>
-                          <p className="text-xs text-gray-600 font-semibold">Email</p>
-                          <a href={`mailto:${selectedEnquiry.email}`} className="text-sm text-red-600 hover:text-red-700 font-semibold truncate">
+                          <p className="text-xs text-[#77736D] font-light">Email</p>
+                          <a href={`mailto:${selectedEnquiry.email}`} className="text-sm text-[#8F2F2F] hover:text-[#7a2828] font-light truncate">
                             {selectedEnquiry.email}
                           </a>
                         </div>
@@ -412,21 +407,21 @@ export const Enquiries: React.FC = () => {
                     {/* Message */}
                     {selectedEnquiry.message && (
                       <div>
-                        <p className="text-xs text-gray-600 font-semibold mb-1">Message</p>
-                        <p className="text-sm text-gray-700 p-2 bg-gray-50 rounded italic">{selectedEnquiry.message}</p>
+                        <p className="text-xs text-[#77736D] font-light mb-1">Message</p>
+                        <p className="text-sm text-[#77736D] p-2 bg-[#F7F6F2] rounded italic font-light">{selectedEnquiry.message}</p>
                       </div>
                     )}
 
                     {/* Action Buttons */}
                     <div className="space-y-2 pt-2">
                       <a href={`https://wa.me/${selectedEnquiry.phone.replace(/\D/g, '')}?text=Hi%20${selectedEnquiry.name}%2C%20we%20received%20your%20enquiry`} target="_blank" rel="noopener noreferrer">
-                        <Button variant="primary" size="sm" className="w-full gap-2">
+                        <Button variant="primary" size="sm" className="w-full gap-2 text-sm">
                           <MessageCircle className="w-4 h-4" />
                           WhatsApp
                         </Button>
                       </a>
                       <a href={`tel:${selectedEnquiry.phone}`}>
-                        <Button variant="secondary" size="sm" className="w-full gap-2">
+                        <Button variant="secondary" size="sm" className="w-full gap-2 text-sm">
                           <Phone className="w-4 h-4" />
                           Call
                         </Button>
@@ -434,14 +429,14 @@ export const Enquiries: React.FC = () => {
                     </div>
 
                     {/* Notes Section */}
-                    <div className="border-t pt-3">
-                      <p className="text-xs text-gray-600 font-semibold mb-2">Notes</p>
+                    <div className="border-t border-[#E5E1DA] pt-3">
+                      <p className="text-xs text-[#77736D] font-light mb-2">Notes</p>
                       {selectedEnquiry.notes ? (
-                        <div className="text-xs text-gray-700 p-2 bg-gray-50 rounded max-h-32 overflow-y-auto whitespace-pre-wrap">
+                        <div className="text-xs text-[#77736D] p-2 bg-[#F7F6F2] rounded max-h-32 overflow-y-auto whitespace-pre-wrap font-light">
                           {selectedEnquiry.notes}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 italic">No notes yet</p>
+                        <p className="text-xs text-[#D4CDBF] italic font-light">No notes yet</p>
                       )}
                     </div>
                   </CardBody>

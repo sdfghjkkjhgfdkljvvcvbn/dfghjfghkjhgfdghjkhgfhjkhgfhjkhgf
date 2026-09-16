@@ -10,9 +10,9 @@ export const NotificationCenter: React.FC = () => {
       case 'success':
         return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <AlertCircle className="w-5 h-5 text-[#8F2F2F]" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
+        return <AlertTriangle className="w-5 h-5 text-amber-600" />;
       case 'info':
       default:
         return <Info className="w-5 h-5 text-blue-600" />;
@@ -24,9 +24,9 @@ export const NotificationCenter: React.FC = () => {
       case 'success':
         return 'bg-emerald-50 border-emerald-200 text-emerald-900';
       case 'error':
-        return 'bg-red-50 border-red-200 text-red-900';
+        return 'bg-red-50 border-[#D4CDBF] text-[#8F2F2F]';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-900';
+        return 'bg-amber-50 border-amber-200 text-amber-900';
       case 'info':
       default:
         return 'bg-blue-50 border-blue-200 text-blue-900';
@@ -38,7 +38,7 @@ export const NotificationCenter: React.FC = () => {
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border ${getStyles(notification.type)} shadow-lg animate-slide-in`}
+          className={`flex items-start gap-3 p-4 rounded-lg border ${getStyles(notification.type)} shadow-md animate-slide-in`}
         >
           <div className="flex-shrink-0 mt-0.5">
             {getIcon(notification.type)}
@@ -46,7 +46,7 @@ export const NotificationCenter: React.FC = () => {
           
           <div className="flex-1 min-w-0">
             {notification.title && (
-              <h3 className="font-semibold text-sm mb-1">
+              <h3 className="font-medium text-sm mb-1">
                 {notification.title}
               </h3>
             )}

@@ -11,25 +11,25 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-medium text-[#202124] mb-2">
             {label}
-            {props.required && <span className="text-red-600">*</span>}
+            {props.required && <span className="text-[#8F2F2F]">*</span>}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full px-4 py-2.5 border-2 rounded-lg text-gray-900 placeholder-gray-500 transition-colors duration-200 focus:outline-none focus:border-red-600 ${
+          className={`w-full px-3 py-2 border rounded-[8px] text-[#202124] placeholder-[#77736D] transition-all duration-200 focus:outline-none ${
             error 
-              ? 'border-red-600 bg-red-50' 
-              : 'border-gray-300 bg-white hover:border-gray-400'
-          } ${className}`}
+              ? 'border-[#8F2F2F] bg-white' 
+              : 'border-[#E5E1DA] bg-white hover:border-[#D4CDBF]'
+          } focus:border-[#8F2F2F] focus:ring-1 focus:ring-[#8F2F2F]/20 ${className}`}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-red-600 font-medium">{error}</p>
+          <p className="mt-1 text-sm text-[#8F2F2F] font-medium">{error}</p>
         )}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-1 text-sm text-[#77736D]">{helperText}</p>
         )}
       </div>
     );

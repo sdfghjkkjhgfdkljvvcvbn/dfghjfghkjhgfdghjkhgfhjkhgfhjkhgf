@@ -46,20 +46,14 @@ a, button, [role="button"], input[type="button"], input[type="submit"] {
   display: none;  /* Chrome, Safari and Opera */
 }
 
-/* Custom scrollbar for premium touch */
+/* Hide scrollbar globally */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: #F3F4F6;
-}
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+
+/* Firefox */
+* {
+  scrollbar-width: none;
 }
 
 /* Custom cursor glow effect */
