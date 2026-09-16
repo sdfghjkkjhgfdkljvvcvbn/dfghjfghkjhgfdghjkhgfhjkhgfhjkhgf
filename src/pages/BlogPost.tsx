@@ -1,24 +1,81 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { Calendar, Clock, ArrowRight, ArrowLeft } from "lucide-react";
-import { posts } from "../data/blogPosts";
+import { blogService } from "../utils/supabase";
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  created_at: string;
+  cover_image?: string;
+  author?: string;
+}
 
 export default function BlogPost() {
   const { id } = useParams<{ id: string }>();
-  const post = posts.find((p) => p.id === id);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [related, setRelated] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (post) {
-      document.title = `${post.title} | Parbati Interior Pvt. Ltd.`;
-      window.scrollTo(0, 0);
-    }
-  }, [post]);
+    loadBlogPost();
+  }, [id]);
 
-  if (!post) {
-    return <Navigate to="/blog" replace />;
+  const loadBlogPost = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all posts to find the one with matching ID
+      const { data, error } = await blogService.fetchAll(true);
+      
+      if (error) {
+        console.error('Error loading blog post:', error);
+        setNotFound(true);
+        return;
+      }
+
+      const foundPost = data?.find((p: BlogPost) => p.id === id);
+      
+      if (!foundPost) {
+        setNotFound(true);
+        return;
+      }
+
+      setPost(foundPost);
+      document.title = `${foundPost.title} | Parbati Interior Pvt. Ltd.`;
+      window.scrollTo(0, 0);
+
+      // Find related posts (same category, different post)
+      const relatedPosts = (data || [])
+        .filter((p: BlogPost) => p.category === foundPost.category && p.id !== foundPost.id)
+        .slice(0, 3);
+      setRelated(relatedPosts);
+    } catch (error) {
+      console.error('Error loading blog post:', error);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div id="blog-post-page" className="min-h-screen bg-gray-50/50 py-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading article...</p>
+        </div>
+      </div>
+    );
   }
 
-  const related = posts.filter((p) => p.category === post.category && p.id !== post.id).slice(0, 3);
+  if (notFound || !post) {
+    return <Navigate to="/blog" replace />;
+  }
 
   return (
     <div id="blog-post-page" className="min-h-screen bg-gray-50/50 py-16">
@@ -34,12 +91,14 @@ export default function BlogPost() {
 
         {/* Hero Image */}
         <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gray-950 mb-8 shadow-xl w-full">
-          <img
-            src={post.coverImage}
-            alt={post.title}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover opacity-90"
-          />
+          {post.cover_image && (
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover opacity-90"
+            />
+          )}
           <span className="absolute bottom-4 left-4 bg-brand-red text-white text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-md">
             {post.category}
           </span>
@@ -49,11 +108,11 @@ export default function BlogPost() {
         <div className="flex items-center gap-4 text-xs text-gray-400 font-semibold mb-6">
           <span className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
-            {new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            {new Date(post.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
-            {post.readTime}
+            5 min read
           </span>
         </div>
 
@@ -64,11 +123,21 @@ export default function BlogPost() {
 
         {/* Article Content */}
         <div className="space-y-6 mb-12">
-          {post.content.map((para, i) => (
-            <p key={i} className="text-base sm:text-lg text-gray-600 leading-relaxed">
-              {para}
+          {post.content && typeof post.content === 'string' ? (
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+              {post.content}
             </p>
-          ))}
+          ) : Array.isArray(post.content) ? (
+            post.content.map((para, i) => (
+              <p key={i} className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                {para}
+              </p>
+            ))
+          ) : (
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+              {post.excerpt}
+            </p>
+          )}
         </div>
 
         {/* CTA */}
@@ -93,14 +162,16 @@ export default function BlogPost() {
                   to={`/blog/${r.id}`}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1"
                 >
-                  <div className="h-32 overflow-hidden">
-                    <img
-                      src={r.coverImage}
-                      alt={r.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  <div className="h-32 overflow-hidden bg-gray-200">
+                    {r.cover_image && (
+                      <img
+                        src={r.cover_image}
+                        alt={r.title}
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
                   </div>
                   <div className="p-4">
                     <h3 className="font-display text-sm font-bold text-gray-900 group-hover:text-brand-red transition-colors leading-snug line-clamp-2">

@@ -1,14 +1,52 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, ArrowRight, Filter } from "lucide-react";
-import { posts, categories } from "../data/blogPosts";
+import { blogService } from "../utils/supabase";
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  created_at: string;
+  cover_image?: string;
+  content?: string;
+  author?: string;
+  status?: string;
+}
 
 export default function Blog() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>(["All"]);
 
   useEffect(() => {
     document.title = "Blog | Parbati Interior Pvt. Ltd.";
+    loadBlogPosts();
   }, []);
+
+  const loadBlogPosts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await blogService.fetchAll(true);
+      
+      if (error) {
+        console.error('Error loading blog posts:', error);
+        return;
+      }
+
+      setPosts(data || []);
+
+      // Extract unique categories
+      const uniqueCategories = Array.from(new Set((data || []).map((p: BlogPost) => p.category)));
+      setCategories(["All", ...uniqueCategories]);
+    } catch (error) {
+      console.error('Error loading blog posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPosts = posts.filter((p) => activeCategory === "All" || p.category === activeCategory);
 
@@ -46,8 +84,13 @@ export default function Blog() {
           ))}
         </div>
 
-        {/* Empty state */}
-        {filteredPosts.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-gray-500 mt-4">Loading blog posts...</p>
+          </div>
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-20 bg-white border border-gray-200/60 rounded-3xl p-12 max-w-md mx-auto">
             <Filter className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="font-display font-bold text-lg text-gray-900 mb-1">No Articles Found</h3>
@@ -63,14 +106,16 @@ export default function Blog() {
                 to={`/blog/${post.id}`}
                 className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1"
               >
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={post.coverImage}
-                    alt={post.title}
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="relative h-56 overflow-hidden bg-gray-200">
+                  {post.cover_image && (
+                    <img
+                      src={post.cover_image}
+                      alt={post.title}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
                   <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-xs py-1 px-2.5 rounded-md text-[10px] font-extrabold text-white uppercase tracking-wide">
                     {post.category}
                   </span>
@@ -80,11 +125,11 @@ export default function Blog() {
                   <div className="flex items-center gap-3 text-[11px] text-gray-400 font-semibold">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />
-                      {new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                      {new Date(post.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {post.readTime}
+                      5 min read
                     </span>
                   </div>
 
@@ -93,7 +138,7 @@ export default function Blog() {
                   </h3>
 
                   <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                    {post.excerpt}
+                    {post.excerpt || "No description available"}
                   </p>
 
                   <div className="pt-3 flex items-center justify-between border-t border-gray-50 text-xs font-bold text-gray-600 group-hover:text-brand-red transition-colors -mx-6 px-6 py-3">
