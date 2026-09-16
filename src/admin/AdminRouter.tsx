@@ -11,8 +11,6 @@ import { Gallery } from './pages/Gallery';
 import { Projects } from './pages/Projects';
 import { Blog } from './pages/Blog';
 import { Services } from './pages/Services';
-import { Packages } from './pages/Packages';
-import { Theme } from './pages/Theme';
 import { Settings } from './pages/Settings';
 import { HappyClients } from './pages/HappyClients';
 
@@ -58,8 +56,6 @@ export const AdminRouter: React.FC = () => {
       <Route path="/projects" element={<ProtectedRoute element={<Projects />} />} />
       <Route path="/blog" element={<ProtectedRoute element={<Blog />} />} />
       <Route path="/services" element={<ProtectedRoute element={<Services />} />} />
-      <Route path="/packages" element={<ProtectedRoute element={<Packages />} />} />
-      <Route path="/theme" element={<ProtectedRoute element={<Theme />} />} />
       <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
       <Route path="/happy-clients" element={<ProtectedRoute element={<HappyClients />} />} />
 

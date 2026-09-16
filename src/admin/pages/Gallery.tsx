@@ -32,14 +32,18 @@ export const Gallery: React.FC = () => {
   const [roomTypeFilter, setRoomTypeFilter] = useState('All');
   const [showForm, setShowForm] = useState(false);
   const [editingImage, setEditingImage] = useState<GalleryImage | null>(null);
+  
+  // SEPARATE FILE STATE - prevents state overwriting
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [selectedBeforeImageFile, setSelectedBeforeImageFile] = useState<File | null>(null);
+  
+  // Form data (without files)
   const [formData, setFormData] = useState({
     roomType: 'Bedroom',
     title: '',
     imageUrl: '',
-    imageFile: null as File | null,
     imagePreview: '',
     beforeImage: '',
-    beforeImageFile: null as File | null,
     beforeImagePreview: '',
     isBeforeAfter: false,
   });
@@ -55,18 +59,12 @@ export const Gallery: React.FC = () => {
       const data = await galleryService.getAll();
       console.log('Loaded gallery images:', data);
       setImages(data || []);
-      
-      const subscription = galleryService.subscribe((payload: any) => {
-        console.log('Gallery update:', payload);
-        loadImages();
-      });
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
-      console.error('Error loading images:', error);
+      const errorMsg = error.message || 'Failed to load images';
+      console.error('Error loading images:', errorMsg);
       addNotification({
         type: 'error',
-        message: 'Failed to load images',
+        message: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -80,14 +78,14 @@ export const Gallery: React.FC = () => {
     : images.filter(img => (img.room_type || img.roomType) === roomTypeFilter);
 
   const handleAddImage = () => {
+    setSelectedImageFile(null);
+    setSelectedBeforeImageFile(null);
     setFormData({
       roomType: 'Bedroom',
       title: '',
       imageUrl: '',
-      imageFile: null,
       imagePreview: '',
       beforeImage: '',
-      beforeImageFile: null,
       beforeImagePreview: '',
       isBeforeAfter: false,
     });
@@ -97,37 +95,81 @@ export const Gallery: React.FC = () => {
 
   const uploadImage = async (file: File, folder: string): Promise<string> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${folder}/${fileName}`;
+      console.log('🔐 CLOUDINARY UPLOAD: Starting...');
+      
+      // Validate file
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Only image files are allowed');
+      }
 
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(filePath, file);
+      console.log('📤 Uploading to Cloudinary:', {
+        fileName: file.name,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        fileType: file.type,
+        folder: `parbati/gallery/${folder}`,
+      });
 
-      if (uploadError) throw uploadError;
+      // Create FormData with actual File object (NOT base64)
+      const formData = new FormData();
+      formData.append('file', file);  // Send actual file, not base64
+      formData.append('upload_preset', 'ml_default');
+      formData.append('folder', `parbati/gallery/${folder}`);
+      formData.append('resource_type', 'auto');
 
-      const { data: urlData } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(filePath);
+      console.log('📡 Uploading to Cloudinary API...');
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/gvjhfpzo/auto/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
-      return urlData.publicUrl;
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('>>> CLOUDINARY RESPONSE <<<');
+      console.log('Full Response:', JSON.stringify(data, null, 2));
+
+      if (!response.ok) {
+        console.error('❌ HTTP Error from Cloudinary:', {
+          status: response.status,
+          error: data.error,
+        });
+        throw new Error(data.error?.message || `HTTP ${response.status}`);
+      }
+
+      // Check for URL in response
+      if (!data.secure_url && !data.url) {
+        console.error('❌ No URL in Cloudinary response:', {
+          hasSecureUrl: !!data.secure_url,
+          hasUrl: !!data.url,
+          keys: Object.keys(data),
+        });
+        throw new Error('Cloudinary response missing secure_url and url');
+      }
+
+      const cloudinaryUrl = data.secure_url || data.url;
+      console.log('✅ URL extracted:', cloudinaryUrl);
+
+      return cloudinaryUrl;
     } catch (error: any) {
-      const errorMsg = error.message || 'Failed to upload image';
-      console.error('Image upload error:', errorMsg);
-      throw new Error(errorMsg);
+      console.error('\n>>> CLOUDINARY UPLOAD ERROR <<<');
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
+      console.error('>>> END ERROR <<<\n');
+      throw error;
     }
   };
 
   const handleEditImage = (image: GalleryImage) => {
+    setSelectedImageFile(null);
+    setSelectedBeforeImageFile(null);
     setFormData({
       roomType: image.room_type || image.roomType || 'Bedroom',
       title: image.title || '',
       imageUrl: image.image_url || image.imageUrl || '',
-      imageFile: null,
       imagePreview: '',
       beforeImage: image.before_image_url || image.beforeImage || '',
-      beforeImageFile: null,
       beforeImagePreview: '',
       isBeforeAfter: image.is_before_after || image.isBeforeAfter || false,
     });
@@ -136,6 +178,23 @@ export const Gallery: React.FC = () => {
   };
 
   const handleSaveImage = async () => {
+    console.log('=== SAVE IMAGE STARTED ===');
+    console.log('Form Data:', {
+      title: formData.title,
+      roomType: formData.roomType,
+      selectedImageFile: selectedImageFile?.name,
+      imageUrl: formData.imageUrl,
+      imagePreview: formData.imagePreview ? 'EXISTS' : 'MISSING',
+    });
+
+    console.log('=== FINAL FILE CHECK ===');
+    console.log('selectedImageFile:', selectedImageFile);
+    console.log('is File:', selectedImageFile instanceof File);
+    console.log('file name:', selectedImageFile?.name);
+    console.log('file type:', selectedImageFile?.type);
+    console.log('file size:', selectedImageFile?.size);
+
+    // 1. Validate title
     if (!formData.title.trim()) {
       addNotification({
         type: 'error',
@@ -144,15 +203,36 @@ export const Gallery: React.FC = () => {
       return;
     }
 
-    if (!formData.imageFile && !formData.imageUrl && !editingImage) {
+    // 2. For NEW images: must have selectedImageFile
+    if (!editingImage && !selectedImageFile) {
+      console.error('❌ No selectedImageFile for new gallery entry');
       addNotification({
         type: 'error',
-        message: 'Image is required',
+        message: 'Image is required - please select an image file',
       });
       return;
     }
 
-    if (formData.isBeforeAfter && !formData.beforeImageFile && !formData.beforeImage && !editingImage) {
+    // 3. Verify it's actually a File
+    if (!editingImage && selectedImageFile && !(selectedImageFile instanceof File)) {
+      console.error('❌ selectedImageFile is not a File instance');
+      addNotification({
+        type: 'error',
+        message: 'Invalid file - please select again',
+      });
+      return;
+    }
+
+    // 4. For BEFORE/AFTER: must have selectedBeforeImageFile
+    if (formData.isBeforeAfter && !editingImage && !selectedBeforeImageFile) {
+      addNotification({
+        type: 'error',
+        message: 'Before image is required for before/after',
+      });
+      return;
+    }
+
+    if (formData.isBeforeAfter && editingImage && formData.isBeforeAfter !== (editingImage.is_before_after || editingImage.isBeforeAfter) && !selectedBeforeImageFile) {
       addNotification({
         type: 'error',
         message: 'Before image is required for before/after',
@@ -165,47 +245,115 @@ export const Gallery: React.FC = () => {
       let finalImageUrl = formData.imageUrl;
       let finalBeforeImageUrl = formData.beforeImage;
 
-      // Upload main image
-      if (formData.imageFile) {
-        finalImageUrl = await uploadImage(formData.imageFile, 'gallery');
+      console.log('Initial state:', { 
+        finalImageUrl, 
+        finalBeforeImageUrl,
+        hasImageFile: !!selectedImageFile,
+        hasBeforeImageFile: !!selectedBeforeImageFile,
+      });
+
+      // STEP 1: Upload main image if file is selected
+      if (selectedImageFile) {
+        console.log('🔄 UPLOADING MAIN IMAGE...');
+        console.log('File details:', {
+          name: selectedImageFile.name,
+          size: `${(selectedImageFile.size / 1024 / 1024).toFixed(2)}MB`,
+          type: selectedImageFile.type,
+        });
+        
+        try {
+          finalImageUrl = await uploadImage(selectedImageFile, 'gallery');
+          console.log('✅ Main image upload successful');
+          console.log('Returned URL:', finalImageUrl);
+          
+          // Verify URL
+          if (!finalImageUrl || !finalImageUrl.startsWith('https://')) {
+            throw new Error(`Invalid URL from Cloudinary: ${finalImageUrl}`);
+          }
+        } catch (uploadError: any) {
+          console.error('❌ Main image upload failed:', uploadError.message);
+          throw new Error(`Image upload failed: ${uploadError.message}`);
+        }
       }
 
-      // Upload before image
-      if (formData.beforeImageFile) {
-        finalBeforeImageUrl = await uploadImage(formData.beforeImageFile, 'gallery/before');
+      // STEP 2: Upload before image if file is selected
+      if (selectedBeforeImageFile) {
+        console.log('🔄 UPLOADING BEFORE IMAGE...');
+        console.log('File details:', {
+          name: selectedBeforeImageFile.name,
+          size: `${(selectedBeforeImageFile.size / 1024 / 1024).toFixed(2)}MB`,
+          type: selectedBeforeImageFile.type,
+        });
+        
+        try {
+          finalBeforeImageUrl = await uploadImage(selectedBeforeImageFile, 'gallery/before');
+          console.log('✅ Before image upload successful');
+          console.log('Returned URL:', finalBeforeImageUrl);
+          
+          // Verify URL
+          if (!finalBeforeImageUrl || !finalBeforeImageUrl.startsWith('https://')) {
+            throw new Error(`Invalid URL from Cloudinary: ${finalBeforeImageUrl}`);
+          }
+        } catch (uploadError: any) {
+          console.error('❌ Before image upload failed:', uploadError.message);
+          throw new Error(`Before image upload failed: ${uploadError.message}`);
+        }
       }
+
+      // STEP 3: Verify we have a valid main image URL
+      console.log('Pre-database check:', {
+        finalImageUrl,
+        finalBeforeImageUrl,
+        isBeforeAfter: formData.isBeforeAfter,
+      });
+
+      if (!finalImageUrl) {
+        throw new Error('No image URL available - upload may have failed');
+      }
+
+      // STEP 4: Save to database
+      console.log('🗄️ SAVING TO DATABASE...');
+      const dataToSave = {
+        room_type: formData.roomType,
+        title: formData.title,
+        image_url: finalImageUrl,
+        before_image_url: finalBeforeImageUrl || null,
+        is_before_after: formData.isBeforeAfter,
+      };
+
+      console.log('Database insert/update data:', dataToSave);
 
       if (editingImage) {
-        await galleryService.update(editingImage.id, {
-          room_type: formData.roomType,
-          title: formData.title,
-          image_url: finalImageUrl,
-          before_image_url: finalBeforeImageUrl,
-          is_before_after: formData.isBeforeAfter,
-        });
+        await galleryService.update(editingImage.id, dataToSave);
+        console.log('✅ Database record updated successfully');
         addNotification({
           type: 'success',
           message: 'Gallery image updated successfully',
         });
       } else {
+        const newId = Date.now().toString();
         await galleryService.create({
-          id: Date.now().toString(),
-          room_type: formData.roomType,
-          title: formData.title,
-          image_url: finalImageUrl,
-          before_image_url: finalBeforeImageUrl,
-          is_before_after: formData.isBeforeAfter,
+          id: newId,
+          ...dataToSave,
         });
+        console.log('✅ Database record created successfully');
         addNotification({
           type: 'success',
           message: 'Gallery image added successfully',
         });
       }
+
+      // STEP 5: Reset file state and close
+      setSelectedImageFile(null);
+      setSelectedBeforeImageFile(null);
       setShowForm(false);
       await loadImages();
+      console.log('=== SAVE IMAGE COMPLETED SUCCESSFULLY ===');
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to save image';
-      console.error('Error saving image:', errorMsg);
+      console.error('=== SAVE IMAGE FAILED ===');
+      console.error('Error:', errorMsg);
+      console.error('Full error:', error);
       addNotification({
         type: 'error',
         message: errorMsg,
@@ -298,8 +446,17 @@ export const Gallery: React.FC = () => {
                 label="Gallery Image"
                 value={formData.imageUrl}
                 preview={formData.imagePreview}
-                onChange={(file) => setFormData({ ...formData, imageFile: file })}
-                onPreviewChange={(preview) => setFormData({ ...formData, imagePreview: preview })}
+                onChange={(file) => {
+                  console.log('🎯 Gallery.tsx received onChange callback with file:', file?.name);
+                  console.log('Setting selectedImageFile state to:', file);
+                  setSelectedImageFile(file);
+                  console.log('✅ selectedImageFile updated to:', file instanceof File ? 'File object' : 'null');
+                }}
+                onPreviewChange={(preview) => {
+                  console.log('🎯 Gallery.tsx received onPreviewChange callback');
+                  console.log('Updating imagePreview (separate from file state)');
+                  setFormData(prev => ({ ...prev, imagePreview: preview }));
+                }}
                 required
                 disabled={uploading}
               />
@@ -323,8 +480,14 @@ export const Gallery: React.FC = () => {
                   label="Before Image"
                   value={formData.beforeImage}
                   preview={formData.beforeImagePreview}
-                  onChange={(file) => setFormData({ ...formData, beforeImageFile: file })}
-                  onPreviewChange={(preview) => setFormData({ ...formData, beforeImagePreview: preview })}
+                  onChange={(file) => {
+                    console.log('🎯 Gallery.tsx received onChange callback for before image:', file?.name);
+                    setSelectedBeforeImageFile(file);
+                  }}
+                  onPreviewChange={(preview) => {
+                    console.log('🎯 Gallery.tsx received onPreviewChange callback for before image');
+                    setFormData(prev => ({ ...prev, beforeImagePreview: preview }));
+                  }}
                   required
                   disabled={uploading}
                 />

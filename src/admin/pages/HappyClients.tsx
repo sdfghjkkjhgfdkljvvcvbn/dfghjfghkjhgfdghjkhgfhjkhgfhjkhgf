@@ -4,9 +4,10 @@ import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { VideoUpload } from '../components/VideoUpload';
 import { Modal } from '../components/Modal';
 import { useUIStore } from '../store/uiStore';
-import { happyClientsService } from '../services/supabaseClient';
+import { happyClientsService, supabase } from '../services/supabaseClient';
 
 interface ClientTestimonial {
   id?: number;
@@ -26,19 +27,36 @@ interface ClientTestimonial {
 export const HappyClients: React.FC = () => {
   const [testimonials, setTestimonials] = useState<ClientTestimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  // SEPARATE FILE STATE - prevents state overwriting
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+
+  // Form data (without files)
   const [formData, setFormData] = useState({
     name: '',
     title: '',
     videoPath: '',
-    clientImage: '',
+    videoPreview: '',
     rating: 5,
   });
   const { addNotification } = useUIStore();
 
   useEffect(() => {
     loadTestimonials();
+    
+    // Set up realtime subscription
+    const subscription = happyClientsService.subscribe((payload: any) => {
+      console.log('Testimonials update:', payload);
+      loadTestimonials();
+    });
+
+    // Return cleanup
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const loadTestimonials = async () => {
@@ -47,13 +65,6 @@ export const HappyClients: React.FC = () => {
       const data = await happyClientsService.getAll();
       console.log('Loaded testimonials:', data);
       setTestimonials(data || []);
-      
-      const subscription = happyClientsService.subscribe((payload: any) => {
-        console.log('Testimonials update:', payload);
-        loadTestimonials();
-      });
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
       console.error('Error loading testimonials:', error);
       addNotification({
@@ -65,12 +76,56 @@ export const HappyClients: React.FC = () => {
     }
   };
 
+  const uploadToCloudinary = async (file: File, folder: string): Promise<string> => {
+    try {
+      console.log('📤 Uploading to Cloudinary:', {
+        fileName: file.name,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        fileType: file.type,
+        folder: `parbati/happy-clients/${folder}`,
+      });
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'ml_default');
+      formData.append('folder', `parbati/happy-clients/${folder}`);
+      formData.append('resource_type', 'auto');
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/gvjhfpzo/auto/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('❌ Cloudinary error:', data);
+        throw new Error(data.error?.message || `Upload failed (${response.status})`);
+      }
+
+      const cloudinaryUrl = data.secure_url || data.url;
+      if (!cloudinaryUrl) {
+        throw new Error('No URL returned from Cloudinary');
+      }
+
+      console.log('✅ Upload successful:', cloudinaryUrl);
+      return cloudinaryUrl;
+    } catch (error: any) {
+      console.error('❌ Upload error:', error.message);
+      throw error;
+    }
+  };
+
   const handleAdd = () => {
+    setSelectedVideoFile(null);
     setFormData({
       name: '',
       title: '',
       videoPath: '',
-      clientImage: '',
+      videoPreview: '',
       rating: 5,
     });
     setEditingId(null);
@@ -78,11 +133,12 @@ export const HappyClients: React.FC = () => {
   };
 
   const handleEdit = (testimonial: ClientTestimonial) => {
+    setSelectedVideoFile(null);
     setFormData({
       name: testimonial.name || '',
       title: testimonial.title || '',
       videoPath: testimonial.video_path || testimonial.videoPath || '',
-      clientImage: testimonial.client_image || testimonial.clientImage || '',
+      videoPreview: '',
       rating: testimonial.rating || 5,
     });
     setEditingId(testimonial.id || null);
@@ -90,49 +146,125 @@ export const HappyClients: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name.trim() || !formData.title.trim() || !formData.videoPath.trim()) {
+    // Validate individual fields
+    const errors: string[] = [];
+    
+    if (!formData.name.trim()) {
+      errors.push('Client Name is required');
+    }
+    if (!formData.title.trim()) {
+      errors.push('Title/Project is required');
+    }
+
+    // For NEW testimonials: must have a video file
+    if (!editingId && !selectedVideoFile) {
+      errors.push('Video is required');
+    }
+
+    // Show one error notification if any fields are missing
+    if (errors.length > 0) {
       addNotification({
         type: 'error',
-        message: 'Please fill in all fields',
+        message: errors.join(' • '),
       });
       return;
     }
 
     try {
+      setUploading(true);
+      let finalVideoUrl = formData.videoPath;
+
+      // Upload video if file is selected
+      if (selectedVideoFile) {
+        console.log('🔄 UPLOADING VIDEO...');
+        try {
+          finalVideoUrl = await uploadToCloudinary(selectedVideoFile, 'videos');
+          console.log('✅ Video upload successful');
+        } catch (uploadError: any) {
+          console.error('❌ Video upload failed:', uploadError.message);
+          throw new Error(`Video upload failed: ${uploadError.message}`);
+        }
+      }
+
+      // Verify we have a video URL
+      if (!finalVideoUrl) {
+        throw new Error('No video URL available');
+      }
+
+      console.log('🗄️ SAVING TO DATABASE...');
+      
+      // Minimal object - only insert fields that MUST exist
+      const dataToSave: any = {};
+      
+      // Always include name and video
+      dataToSave.name = formData.name;
+      dataToSave.video_path = finalVideoUrl;
+      
+      // Only add title if form has it and it's not empty
+      if (formData.title && formData.title.trim()) {
+        dataToSave.title = formData.title;
+      }
+      
+      // Only add rating if it exists
+      if (formData.rating) {
+        dataToSave.rating = formData.rating;
+      }
+      
+      console.log('Attempting to insert:', dataToSave);
+
       if (editingId !== null) {
-        await happyClientsService.update(editingId, {
-          name: formData.name,
-          title: formData.title,
-          video_path: formData.videoPath,
-          client_image: formData.clientImage,
-          rating: formData.rating,
-        });
+        console.log('Updating testimonial:', editingId, dataToSave);
+        const { data: updateData, error: updateError } = await supabase
+          .from('happy_clients')
+          .update(dataToSave)
+          .eq('id', editingId)
+          .select();
+        
+        if (updateError) {
+          console.error('❌ UPDATE ERROR:', updateError);
+          throw updateError;
+        }
+        console.log('✅ Update successful:', updateData);
+        
         addNotification({
           type: 'success',
           message: 'Client testimonial updated',
         });
       } else {
-        await happyClientsService.create({
-          name: formData.name,
-          title: formData.title,
-          video_path: formData.videoPath,
-          client_image: formData.clientImage,
-          project_image: formData.clientImage,
-          rating: formData.rating,
-        });
+        console.log('Creating new testimonial with:', dataToSave);
+        const { data: createData, error: createError } = await supabase
+          .from('happy_clients')
+          .insert([dataToSave])
+          .select();
+        
+        if (createError) {
+          console.error('❌ CREATE ERROR:', createError);
+          console.error('Error details:', {
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint,
+          });
+          throw createError;
+        }
+        console.log('✅ Create successful:', createData);
+        
         addNotification({
           type: 'success',
           message: 'Client testimonial added',
         });
       }
+
       setShowForm(false);
+      setSelectedVideoFile(null);
       await loadTestimonials();
     } catch (error: any) {
       console.error('Error saving testimonial:', error);
       addNotification({
         type: 'error',
-        message: 'Failed to save testimonial',
+        message: 'Failed to save testimonial: ' + (error.message || 'Unknown error'),
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -179,11 +311,11 @@ export const HappyClients: React.FC = () => {
             size="lg"
             footer={
               <>
-                <Button variant="secondary" onClick={() => setShowForm(false)}>
+                <Button variant="secondary" onClick={() => setShowForm(false)} disabled={uploading}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSave}>
-                  {editingId ? 'Update' : 'Add'} Client
+                <Button variant="primary" onClick={handleSave} disabled={uploading}>
+                  {uploading ? 'Uploading...' : (editingId ? 'Update' : 'Add')} Client
                 </Button>
               </>
             }
@@ -195,6 +327,7 @@ export const HappyClients: React.FC = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
+                disabled={uploading}
               />
 
               <Input
@@ -203,23 +336,23 @@ export const HappyClients: React.FC = () => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
+                disabled={uploading}
               />
 
-              <Input
-                label="Video Path"
-                placeholder="/video/our happy client/1.mp4"
+              <VideoUpload
+                label="Video Upload"
                 value={formData.videoPath}
-                onChange={(e) => setFormData({ ...formData, videoPath: e.target.value })}
-                helperText="Local video path or URL"
+                preview={formData.videoPreview}
+                onChange={(file) => {
+                  console.log('🎯 HappyClients.tsx received onChange callback with video:', file?.name);
+                  setSelectedVideoFile(file);
+                }}
+                onPreviewChange={(preview) => {
+                  console.log('🎯 HappyClients.tsx received onPreviewChange callback for video');
+                  setFormData(prev => ({ ...prev, videoPreview: preview }));
+                }}
                 required
-              />
-
-              <Input
-                label="Client Image Path"
-                placeholder="/reviewers/garima.jpg"
-                value={formData.clientImage}
-                onChange={(e) => setFormData({ ...formData, clientImage: e.target.value })}
-                helperText="Image path or URL"
+                disabled={uploading}
               />
 
               <div>
@@ -227,9 +360,10 @@ export const HappyClients: React.FC = () => {
                   Rating
                 </label>
                 <select
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600 disabled:opacity-50"
                   value={formData.rating}
                   onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                  disabled={uploading}
                 >
                   {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
@@ -289,10 +423,6 @@ export const HappyClients: React.FC = () => {
                       <span key={i} className="text-yellow-400">⭐</span>
                     ))}
                   </div>
-
-                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
-                    Image: {testimonial.client_image || testimonial.clientImage}
-                  </div>
                 </CardBody>
 
                 {/* Actions */}
@@ -320,21 +450,6 @@ export const HappyClients: React.FC = () => {
             ))}
           </div>
         )}
-
-        {/* Video Preview Guide */}
-        <Card>
-          <CardHeader title="Video Paths" />
-          <CardBody className="space-y-2">
-            <p className="text-sm text-gray-600">Supported video formats:</p>
-            <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
-              <li>/video/our happy client/1.mp4</li>
-              <li>/video/our happy client/2.mp4</li>
-              <li>/video/our happy client/3.mp4</li>
-              <li>/video/our happy client/4.mp4</li>
-              <li>/video/our happy client/5 .mp4</li>
-            </ul>
-          </CardBody>
-        </Card>
       </div>
     </DashboardLayout>
   );

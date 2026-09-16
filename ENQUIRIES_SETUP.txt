@@ -1,0 +1,98 @@
+================================================================================
+ENQUIRIES SYSTEM SETUP - REQUIRED
+================================================================================
+
+The Enquiries feature is now implemented and working, BUT the bookings table 
+needs to be created in Supabase first.
+
+ERROR YOU'RE SEEING:
+"Failed to load resource: the server responded with a status of 404"
+This means the bookings table doesn't exist.
+
+SOLUTION:
+================================================================================
+
+1. Go to your Supabase Project
+   - Visit: https://app.supabase.com
+   - Select your project
+
+2. Open SQL Editor
+   - Click "SQL Editor" on the left sidebar
+   - Click "New query" (or "+")
+
+3. Copy and paste this SQL:
+================================================================================
+
+CREATE TABLE bookings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  phone text NOT NULL,
+  email text,
+  event_date text,
+  requirement text NOT NULL DEFAULT 'General Enquiry',
+  message text,
+  notes text,
+  source text DEFAULT 'website',
+  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'booked', 'closed')),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_bookings_status ON bookings(status);
+CREATE INDEX idx_bookings_created_at ON bookings(created_at DESC);
+
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public insert bookings" ON bookings
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public read bookings" ON bookings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Auth update bookings" ON bookings
+  FOR UPDATE USING (true) WITH CHECK (true);
+
+CREATE POLICY "Auth delete bookings" ON bookings
+  FOR DELETE USING (true);
+
+================================================================================
+
+4. Click "Run" button (or Ctrl+Enter)
+   - Wait for success message
+   - You should see "SUCCESS" in green
+
+5. Refresh your website admin page
+   - The Enquiries page will now load without errors
+
+================================================================================
+HOW IT WORKS:
+================================================================================
+
+USER SIDE (Website):
+- User clicks "Book Consultation" button on Services/Projects pages
+- Fills in: Name, Phone, Requirements/Message
+- Clicks "Send enquiry"
+- Data saves to bookings table automatically
+- Gets redirected to WhatsApp
+
+ADMIN SIDE (Admin Panel):
+- Go to Admin → Enquiries
+- See all customer enquiries in a beautiful list
+- Filter by status: All, New, Contacted, Booked, Closed
+- Search by name, phone, email, service
+- Click on enquiry to see details panel
+- Change status, add notes, call or WhatsApp directly
+
+================================================================================
+FEATURES:
+================================================================================
+
+✅ Enquiry Logging - Automatic when customer submits form
+✅ Status Management - New → Contacted → Booked → Closed
+✅ Search & Filter - Find enquiries quickly
+✅ Notes & Follow-ups - Track customer interactions
+✅ Direct Contact - Call or WhatsApp buttons
+✅ Real-time Updates - Reflects changes instantly
+✅ Professional UI - Clean, organized list with details panel
+
+================================================================================

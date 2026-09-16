@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MessageSquare,
@@ -12,6 +12,7 @@ import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardBody, CardHeader } from '../components/Card';
 import { Button } from '../components/Button';
 import { useAuthStore } from '../store/authStore';
+import { enquiriesService, projectsService, servicesService, blogService } from '../services/supabaseClient';
 
 interface MetricCard {
   title: string;
@@ -22,13 +23,18 @@ interface MetricCard {
   color: string;
 }
 
+interface Activity {
+  title: string;
+  time: string;
+  type: string;
+}
+
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
-
-  const metrics: MetricCard[] = [
+  const [metrics, setMetrics] = useState<MetricCard[]>([
     {
       title: 'New Enquiries',
-      value: 12,
+      value: 0,
       subtitle: 'This month',
       icon: <MessageSquare className="w-8 h-8" />,
       href: '/admin/enquiries',
@@ -36,7 +42,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       title: 'Projects',
-      value: 45,
+      value: 0,
       subtitle: 'Published',
       icon: <Briefcase className="w-8 h-8" />,
       href: '/admin/projects',
@@ -44,7 +50,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       title: 'Services',
-      value: 8,
+      value: 0,
       subtitle: 'Active',
       icon: <Palette className="w-8 h-8" />,
       href: '/admin/services',
@@ -52,20 +58,90 @@ export const Dashboard: React.FC = () => {
     },
     {
       title: 'Blog Posts',
-      value: 23,
+      value: 0,
       subtitle: 'Published',
       icon: <FileText className="w-8 h-8" />,
       href: '/admin/blog',
       color: 'text-orange-600',
     },
-  ];
+  ]);
 
-  const recentActivities = [
-    { title: 'New enquiry from Rajesh Kumar', time: '2 hours ago', type: 'enquiry' },
-    { title: 'Published "Modern Kitchen Design" blog post', time: '5 hours ago', type: 'blog' },
-    { title: 'Added "Modular Kitchen" service', time: '1 day ago', type: 'service' },
-    { title: 'Updated project gallery', time: '2 days ago', type: 'project' },
-  ];
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      // Fetch all data
+      const [enquiries, projects, services, blogs] = await Promise.all([
+        enquiriesService.getAll(),
+        projectsService.getAll(),
+        servicesService.getAll(),
+        blogService.getAll(),
+      ]);
+
+      // Update metrics
+      setMetrics(prev => [
+        { ...prev[0], value: enquiries?.length || 0 },
+        { ...prev[1], value: projects?.length || 0 },
+        { ...prev[2], value: services?.length || 0 },
+        { ...prev[3], value: blogs?.length || 0 },
+      ]);
+
+      // Build recent activities from all data
+      const activities: Activity[] = [];
+
+      // Add blog posts
+      if (blogs && blogs.length > 0) {
+        blogs.slice(0, 2).forEach((blog: any) => {
+          activities.push({
+            title: `Published "${blog.title}" blog post`,
+            time: new Date(blog.published_date || blog.created_at).toLocaleDateString(),
+            type: 'blog',
+          });
+        });
+      }
+
+      // Add services
+      if (services && services.length > 0) {
+        services.slice(0, 2).forEach((service: any) => {
+          activities.push({
+            title: `Added "${service.name}" service`,
+            time: new Date(service.created_at).toLocaleDateString(),
+            type: 'service',
+          });
+        });
+      }
+
+      // Add projects
+      if (projects && projects.length > 0) {
+        projects.slice(0, 2).forEach((project: any) => {
+          activities.push({
+            title: `Added "${project.title}" project`,
+            time: new Date(project.created_at).toLocaleDateString(),
+            type: 'project',
+          });
+        });
+      }
+
+      // Add enquiries
+      if (enquiries && enquiries.length > 0) {
+        enquiries.slice(0, 2).forEach((enquiry: any) => {
+          activities.push({
+            title: `New enquiry from ${enquiry.name}`,
+            time: new Date(enquiry.created_at).toLocaleDateString(),
+            type: 'enquiry',
+          });
+        });
+      }
+
+      setRecentActivities(activities.slice(0, 4));
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -169,15 +245,6 @@ export const Dashboard: React.FC = () => {
                     className="w-full justify-between"
                   >
                     Write Blog
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link to="/admin/theme">
-                  <Button
-                    variant="secondary"
-                    className="w-full justify-between"
-                  >
-                    Customize Theme
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>

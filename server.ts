@@ -1,10 +1,12 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
-import { createApp } from "./server/createApp";
 
+// Load environment variables FIRST before any other imports
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+
+import { createServer as createViteServer } from "vite";
+import { createApp } from "./server/createApp";
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 

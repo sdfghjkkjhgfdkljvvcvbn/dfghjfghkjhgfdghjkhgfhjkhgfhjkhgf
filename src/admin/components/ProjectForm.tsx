@@ -1,27 +1,15 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import { ImageUpload } from './ImageUpload';
 import { Modal } from './Modal';
-import { supabase } from '../services/supabaseClient';
 import { useUIStore } from '../store/uiStore';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  mediaUrl: string;
-  mediaType: 'image' | 'video';
-  createdAt: string;
-  updatedAt?: string;
-}
+import { LegacyProject } from '../../types';
 
 interface ProjectFormProps {
-  project: Project | null;
+  project: LegacyProject | null;
   categories: string[];
-  onSave: (project: Omit<Project, 'id' | 'createdAt'>) => void;
+  onSave: (project: Omit<LegacyProject, 'id' | 'createdAt'>) => void;
   onCancel: () => void;
 }
 
@@ -48,28 +36,48 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
 
   const uploadMedia = async (file: File): Promise<string> => {
     try {
-      setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `projects/${fileName}`;
+      console.log('🔐 CLOUDINARY UPLOAD: Starting...');
+      console.log('File:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+      
+      // Validate file type (image or video)
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      
+      if (!isImage && !isVideo) {
+        throw new Error('Only image and video files are allowed');
+      }
 
-      const { error: uploadError } = await supabase.storage
-        .from('projects')
-        .upload(filePath, file);
+      // Direct Cloudinary upload
+      const CLOUD_NAME = 'gvjhfpzo';
+      const UPLOAD_PRESET = 'ml_default';
 
-      if (uploadError) throw uploadError;
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append('file', file);
+      cloudinaryFormData.append('upload_preset', UPLOAD_PRESET);
+      cloudinaryFormData.append('folder', 'parbati/projects');
+      cloudinaryFormData.append('resource_type', 'auto');
 
-      const { data: urlData } = supabase.storage
-        .from('projects')
-        .getPublicUrl(filePath);
+      console.log('📡 Uploading to Cloudinary...');
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+        method: 'POST',
+        body: cloudinaryFormData,
+      });
 
-      return urlData.publicUrl;
+      const data = await response.json();
+      console.log('Cloudinary response:', data);
+
+      if (!response.ok) {
+        console.error('Cloudinary error:', data);
+        throw new Error(data.error?.message || 'Upload failed');
+      }
+
+      const cloudinaryUrl = data.secure_url || data.url;
+      console.log('✅ Upload successful, URL:', cloudinaryUrl);
+      return cloudinaryUrl;
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to upload media';
-      console.error('Media upload error:', errorMsg);
+      console.error('❌ Media upload error:', errorMsg);
       throw new Error(errorMsg);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -83,7 +91,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       newErrors.description = 'Description is required';
     }
     if (!formData.mediaFile && !formData.mediaUrl && !project) {
-      newErrors.mediaUrl = 'Media is required';
+      newErrors.mediaUrl = 'Media is required - please select an image or enter video URL';
     }
 
     setErrors(newErrors);
@@ -92,33 +100,54 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('=== FORM SUBMITTED ===');
+    console.log('Current form data:', formData);
 
     if (!validateForm()) {
+      console.error('Form validation failed');
+      console.log('Errors:', errors);
       return;
     }
 
     try {
+      setUploading(true);
       let finalMediaUrl = formData.mediaUrl;
+
+      console.log('Media file check:', {
+        hasFile: !!formData.mediaFile,
+        hasUrl: !!formData.mediaUrl,
+        isEditing: !!project,
+      });
 
       // Upload media if a new file was selected
       if (formData.mediaFile) {
+        console.log('🔄 Starting media upload...');
         finalMediaUrl = await uploadMedia(formData.mediaFile);
+        console.log('✅ Media URL obtained:', finalMediaUrl);
       }
 
-      onSave({
+      const projectData = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
         mediaUrl: finalMediaUrl,
         mediaType: formData.mediaType,
-      });
+      };
+
+      console.log('📤 Calling onSave with data:', projectData);
+      onSave(projectData);
+      console.log('=== FORM SUBMISSION COMPLETED ===');
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to save project';
-      console.error('Error saving project:', errorMsg);
+      console.error('=== FORM SUBMISSION ERROR ===');
+      console.error('Error:', errorMsg);
+      console.error('Stack:', error.stack);
       addNotification({
         type: 'error',
         message: errorMsg,
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -130,10 +159,19 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="secondary" onClick={onCancel} disabled={uploading}>
+          <Button 
+            variant="secondary" 
+            onClick={onCancel} 
+            disabled={uploading}
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit} disabled={uploading}>
+          <Button 
+            variant="primary" 
+            onClick={handleSubmit} 
+            disabled={uploading}
+            type="button"
+          >
             {uploading ? 'Uploading...' : (project ? 'Update Project' : 'Add Project')}
           </Button>
         </>
@@ -248,8 +286,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             label="Project Image"
             value={formData.mediaUrl}
             preview={formData.mediaPreview}
-            onChange={(file) => setFormData({ ...formData, mediaFile: file })}
-            onPreviewChange={(preview) => setFormData({ ...formData, mediaPreview: preview })}
+            onChange={(file) => {
+              console.log('Image selected:', file?.name);
+              setFormData({ ...formData, mediaFile: file });
+            }}
+            onPreviewChange={(preview) => {
+              console.log('Preview created');
+              setFormData(prev => ({ ...prev, mediaPreview: preview }));
+            }}
             required
             disabled={uploading}
           />

@@ -3,7 +3,26 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'your-anon-key';
 
+// Log environment check
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+  console.error('⚠️ CRITICAL: Supabase environment variables are not set. Check .env file.');
+}
+
+// Single Supabase client instance - reused across the entire app
+// This is the ONLY client instance that should be used across the admin panel
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Helper to check if user is authenticated
+export const isAuthenticated = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return !!session;
+};
+
+// Helper to get current user ID
+export const getCurrentUserId = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id || null;
+};
 
 // Project operations
 export const projectsService = {
@@ -340,7 +359,7 @@ export const galleryService = {
         .from('gallery_images')
         .select('*')
         .eq('room_type', roomType)
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -355,7 +374,7 @@ export const galleryService = {
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];

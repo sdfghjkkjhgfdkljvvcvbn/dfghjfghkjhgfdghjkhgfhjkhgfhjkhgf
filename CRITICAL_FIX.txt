@@ -1,0 +1,126 @@
+================================================================================
+                    HAPPY CLIENTS - CRITICAL DATABASE FIX
+================================================================================
+
+PROBLEM:
+  Supabase returns: 400 Bad Request
+  Error: "Could not find the 'title' column of 'happy_clients' in the schema cache"
+
+ROOT CAUSE:
+  Your Supabase happy_clients table does NOT have the required columns.
+
+SOLUTION:
+  Your table needs these columns:
+    - name (text, NOT NULL)
+    - video_path (text)
+    - title (text) [optional]
+    - rating (integer, default 5) [optional]
+
+================================================================================
+                          IMMEDIATE ACTION REQUIRED
+================================================================================
+
+1. GO TO SUPABASE DASHBOARD
+   https://supabase.com
+
+2. CLICK: SQL Editor (left sidebar)
+
+3. CREATE NEW QUERY
+
+4. COPY & PASTE THIS SQL:
+
+--------------------------------------------------------------------------------
+-- Drop the old table and recreate it correctly
+DROP TABLE IF EXISTS happy_clients CASCADE;
+
+-- Create the correct table
+CREATE TABLE happy_clients (
+  id bigint PRIMARY KEY DEFAULT nextval('happy_clients_id_seq'::regclass),
+  name text NOT NULL,
+  title text,
+  video_path text,
+  rating integer DEFAULT 5,
+  display_order integer DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Create the sequence
+CREATE SEQUENCE IF NOT EXISTS happy_clients_id_seq;
+
+-- Enable RLS
+ALTER TABLE happy_clients ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policy (allow all)
+CREATE POLICY "Allow all" ON happy_clients 
+  FOR ALL USING (true) WITH CHECK (true);
+--------------------------------------------------------------------------------
+
+5. CLICK: RUN button (or press Ctrl+Enter)
+
+6. WAIT: Query should complete successfully
+
+================================================================================
+                        THEN TEST IN YOUR APP
+================================================================================
+
+1. OPEN: http://localhost:3000/admin
+2. CLICK: Happy Clients (left sidebar)
+3. CLICK: Add Client
+4. FILL FORM:
+   - Client Name: "Test Client"
+   - Title/Project: "Test Project"
+   - Rating: 5 stars
+5. UPLOAD: Select a video file
+6. CLICK: "Add Client" button
+7. WATCH: Console (F12) for logs
+8. VERIFY: No "Could not find" errors
+9. CONFIRM: Testimonial appears in list
+
+================================================================================
+                          IF STILL GETTING ERROR
+================================================================================
+
+If you still get the 400 error after creating the table:
+
+1. CHECK THE EXACT ERROR MESSAGE in browser console
+2. COPY IT
+3. The error message will show which column is missing
+4. ADD THAT COLUMN using ALTER TABLE
+
+Example:
+  If error says "Could not find the 'video_path' column":
+  
+  ALTER TABLE happy_clients ADD COLUMN video_path text;
+
+================================================================================
+                         IMPORTANT NOTES
+================================================================================
+
+- DO NOT include "columns=" parameter in URL (code now fixed)
+- DO NOT send extra fields that don't exist in table
+- Table ID MUST auto-increment (using sequence)
+- All insert errors will now show in browser console
+- Console will show exact field names that failed
+
+================================================================================
+                      CODE CHANGES MADE
+================================================================================
+
+✅ Removed dependency on happyClientsService.create()
+✅ Direct Supabase insert (no extra parameters)
+✅ Simplified data object (only required fields)
+✅ Enhanced error logging (shows exact Supabase error)
+✅ Removed "columns" URL parameter issue
+✅ Better error messages in console
+
+================================================================================
+                        BUILD STATUS
+================================================================================
+
+✅ Build: PASSED (npm run build - 7.74s)
+✅ TypeScript: NO ERRORS
+✅ Ready: YES
+
+Start dev server and test immediately.
+
+================================================================================

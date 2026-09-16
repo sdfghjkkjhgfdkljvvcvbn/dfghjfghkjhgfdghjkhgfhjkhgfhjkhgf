@@ -69,16 +69,6 @@ export const HeroSlider: React.FC = () => {
       
       console.log('Loaded hero slides:', data);
       setSlides(data || []);
-      
-      const subscription = supabase
-        .channel('hero-slides-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'hero_slides' }, (payload: any) => {
-          console.log('Hero slides update:', payload);
-          loadSlides();
-        })
-        .subscribe();
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
       const errorMsg = error.message || 'Unexpected error loading slides';
       console.error('Error loading slides:', errorMsg);
@@ -144,24 +134,65 @@ export const HeroSlider: React.FC = () => {
   const uploadImage = async (file: File): Promise<string> => {
     try {
       setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `hero-slides/${fileName}`;
+      
+      console.log('🔐 UPLOAD STARTED: Using Cloudinary...');
+      
+      // Validate file
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Only image files are allowed');
+      }
+      
+      if (file.size > 100 * 1024 * 1024) {
+        throw new Error('Image must be less than 100MB');
+      }
 
-      const { error: uploadError } = await supabase.storage
-        .from('hero-slides')
-        .upload(filePath, file);
+      console.log('📤 Uploading to Cloudinary:', {
+        fileName: file.name,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        fileType: file.type,
+        folder: 'parbati/hero-slides',
+      });
 
-      if (uploadError) throw uploadError;
+      // Direct upload without using service
+      const CLOUD_NAME = 'gvjhfpzo';
+      const UPLOAD_PRESET = 'ml_default';
 
-      const { data: urlData } = supabase.storage
-        .from('hero-slides')
-        .getPublicUrl(filePath);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      formData.append('folder', 'parbati/hero-slides');
+      formData.append('resource_type', 'auto');
 
-      return urlData.publicUrl;
+      console.log('📡 Sending to Cloudinary API...');
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (!response.ok) {
+        console.error('Cloudinary error:', data);
+        throw new Error(data.error?.message || `Upload failed: ${response.status}`);
+      }
+
+      if (!data.secure_url) {
+        console.error('No URL in response:', data);
+        throw new Error('No URL returned from Cloudinary');
+      }
+
+      const imageUrl = data.secure_url;
+      console.log('✓ Upload successful, URL:', imageUrl);
+      return imageUrl;
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to upload image';
-      console.error('Image upload error:', errorMsg);
+      console.error('❌ Image upload error:', errorMsg);
+      addNotification({
+        type: 'error',
+        message: errorMsg,
+      });
       throw new Error(errorMsg);
     } finally {
       setUploading(false);
@@ -172,11 +203,13 @@ export const HeroSlider: React.FC = () => {
     setFormData({
       headline: slide.headline || '',
       subheading: slide.subheading || '',
-      imageUrl: slide.image_url || slide.imageUrl || '',
-      buttonText: slide.button_text || slide.buttonText || '',
-      buttonLink: slide.button_link || slide.buttonLink || '',
+      imageUrl: slide.image_url || '',
+      imageFile: null as any,
+      imagePreview: '',
+      buttonText: slide.button_text || '',
+      buttonLink: slide.button_link || '',
       status: slide.status || 'Draft',
-      displayOrder: slide.display_order || slide.displayOrder || 1,
+      displayOrder: slide.display_order || 1,
     });
     setEditingSlide(slide);
     setShowForm(true);
@@ -230,9 +263,12 @@ export const HeroSlider: React.FC = () => {
           message: 'Slide updated successfully',
         });
       } else {
+        // Generate UUID for new slide
+        const newId = crypto.randomUUID();
         const { error } = await supabase
           .from('hero_slides')
           .insert({
+            id: newId,
             headline: formData.headline,
             subheading: formData.subheading,
             image_url: finalImageUrl,

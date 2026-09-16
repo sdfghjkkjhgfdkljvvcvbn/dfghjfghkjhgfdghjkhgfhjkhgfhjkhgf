@@ -47,18 +47,12 @@ export const Blog: React.FC = () => {
       const data = await blogService.getAll();
       console.log('Loaded blog posts:', data);
       setPosts(data || []);
-      
-      const subscription = blogService.subscribe((payload: any) => {
-        console.log('Blog update:', payload);
-        loadPosts();
-      });
-      
-      return () => subscription?.unsubscribe();
     } catch (error: any) {
       console.error('Error loading posts:', error);
+      const errorMsg = error.message || 'Failed to load posts';
       addNotification({
         type: 'error',
-        message: 'Failed to load posts: ' + (error.message || 'Unknown error'),
+        message: errorMsg,
       });
     } finally {
       setLoading(false);

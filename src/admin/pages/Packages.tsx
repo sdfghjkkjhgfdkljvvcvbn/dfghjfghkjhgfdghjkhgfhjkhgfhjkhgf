@@ -90,8 +90,8 @@ export const Packages: React.FC = () => {
       price: pkg.price || 0,
       currency: (pkg.currency || 'NPR') as 'NPR' | 'USD',
       features: Array.isArray(pkg.features) ? pkg.features.join('\n') : (pkg.features || ''),
-      deliveryTimeline: pkg.delivery_timeline_days || pkg.deliveryTimeline || '',
-      isActive: pkg.is_active || pkg.isActive || true,
+      deliveryTimeline: String(pkg.delivery_timeline_days || ''),
+      isActive: pkg.is_active || true,
     });
     setEditingPackage(pkg);
     setShowForm(true);

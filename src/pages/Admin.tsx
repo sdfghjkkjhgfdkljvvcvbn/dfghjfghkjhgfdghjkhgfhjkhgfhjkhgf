@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Project, ContactMessage } from "../types";
+import { LegacyProject, ContactMessage } from "../types";
 import { transformDriveUrl } from "../utils/driveHelper";
 import { Lock, LogOut, Key, User, Plus, Trash2, Edit2, Calendar, FileText, Check, Phone, Mail, MessageSquare, RefreshCw, Eye, Sparkles, Loader2, AlertCircle } from "lucide-react";
 
@@ -17,7 +17,7 @@ export default function Admin() {
 
   // Administrative dashboard states
   const [activeTab, setActiveTab] = useState<"projects" | "contacts">("projects");
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<LegacyProject[]>([]);
   const [contacts, setContacts] = useState<ContactMessage[]>([]);
   const [loadingData, setLoadingData] = useState(false);
 
@@ -223,7 +223,7 @@ export default function Admin() {
   };
 
   // Populate form with current project details for Editing
-  const startEditProject = (proj: Project) => {
+  const startEditProject = (proj: LegacyProject) => {
     setIsEditing(true);
     setEditingProjectId(proj.id);
     setProjectForm({

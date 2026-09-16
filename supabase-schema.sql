@@ -30,17 +30,18 @@ CREATE INDEX idx_bookings_created_at ON bookings(created_at DESC);
 -- ============================================
 CREATE TABLE IF NOT EXISTS hero_slides (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  image_url text NOT NULL,
-  title text NOT NULL DEFAULT '',
-  description text NOT NULL DEFAULT '',
-  sort_order integer NOT NULL DEFAULT 0,
-  active boolean NOT NULL DEFAULT true,
+  headline text NOT NULL,
+  subheading text,
+  image_url text,
+  button_text text,
+  button_link text,
+  status text DEFAULT 'Draft',
+  display_order integer DEFAULT 0,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
 
-CREATE INDEX idx_hero_slides_active ON hero_slides(active);
-CREATE INDEX idx_hero_slides_sort_order ON hero_slides(sort_order);
+CREATE INDEX idx_hero_slides_display_order ON hero_slides(display_order);
 
 -- ============================================
 -- 3. SERVICES TABLE
